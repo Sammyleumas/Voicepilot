@@ -63,6 +63,7 @@ import com.voicepilot.ai.ui.components.SwitchRow
 import com.voicepilot.ai.ui.components.TextInputDialog
 import com.voicepilot.ai.ui.components.VpTopBar
 import com.voicepilot.ai.ui.theme.Spacing
+import com.voicepilot.ai.widget.HomeScreenShortcuts
 import com.voicepilot.core.action.BuiltInActions
 import com.voicepilot.core.model.Capability
 import com.voicepilot.core.settings.AiProviderType
@@ -162,6 +163,25 @@ fun SettingsScreen(
                         else viewModel.setHandsFree(enabled)
                     },
                     Icons.Filled.RecordVoiceOver,
+                )
+                SettingRow(
+                    "Add Talk button to home screen",
+                    "A small round SL mic button. Tap it to start talking.",
+                    Icons.Filled.Widgets,
+                    onClick = {
+                        val added = HomeScreenShortcuts.pinWidget(context) || HomeScreenShortcuts.pinShortcut(context)
+                        if (!added) viewModel.showMessage("Your launcher can't add it automatically. Long-press the home screen, choose Widgets, and drag “Talk to SL” onto it.")
+                    },
+                )
+                SettingRow(
+                    "Add “Talk to SL” icon",
+                    "An app-style shortcut icon on your home screen",
+                    Icons.Filled.Mic,
+                    onClick = {
+                        if (!HomeScreenShortcuts.pinShortcut(context)) {
+                            viewModel.showMessage("Your launcher can't add shortcuts automatically. Long-press the SL app icon and drag “Talk” to your home screen.")
+                        }
+                    },
                 )
                 SettingRow(
                     "Default assistant",

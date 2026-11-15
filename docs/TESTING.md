@@ -50,6 +50,7 @@ Run on Android 10, 12 and 14/15, including at least one Samsung and one Tecno/In
 | 12 | Say “cancel” during a question; tap stop during execution | Nothing runs; state returns to Ready |
 | 13 | Unsupported command (“transfer 5,000 naira to Ada”) | Clear refusal, nothing opened |
 | 14 | Set as default assistant; long-press Home / assist gesture | Overlay opens and listens; screen-on only |
+| 14b | Settings › Voice › Add Talk button to home screen; tap the widget | Launcher asks to place it; tapping opens SL listening |
 | 15 | Quick Settings tile | Overlay opens (Android 14 PendingIntent path) |
 | 16 | Hands-free mode on, app open, say “Hey VoicePilot, open YouTube” | YouTube opens |
 | 17 | Hands-free mode, app in background | Tap-to-talk notification appears, no screen launched |

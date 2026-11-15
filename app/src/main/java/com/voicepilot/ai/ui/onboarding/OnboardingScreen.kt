@@ -71,6 +71,7 @@ import com.voicepilot.ai.ui.components.SecondaryButton
 import com.voicepilot.ai.ui.components.VpCard
 import com.voicepilot.ai.ui.settings.SettingsViewModel
 import com.voicepilot.ai.ui.theme.Spacing
+import com.voicepilot.ai.widget.HomeScreenShortcuts
 import com.voicepilot.core.model.Capability
 import com.voicepilot.core.settings.AiProviderType
 
@@ -263,6 +264,12 @@ private fun ColumnScope.AssistantStep(next: () -> Unit) {
         Bullet(Icons.Filled.PhoneAndroid, "Default assistant", "Long-press Home or use the assist gesture to open SL. Set it in Android's assistant settings.")
         Spacer(Modifier.height(Spacing.sm))
         SecondaryButton("Open assistant settings", onClick = { context.startSafely(Intent(android.provider.Settings.ACTION_VOICE_INPUT_SETTINGS)) })
+        Spacer(Modifier.height(Spacing.md))
+        Bullet(Icons.Filled.Mic, "Talk button on your home screen", "A small round SL button. Tap it and start speaking.")
+        Spacer(Modifier.height(Spacing.sm))
+        SecondaryButton("Add Talk button to home screen", onClick = {
+            HomeScreenShortcuts.pinWidget(context) || HomeScreenShortcuts.pinShortcut(context)
+        })
         Spacer(Modifier.height(Spacing.md))
         Bullet(Icons.Filled.Apps, "Quick Settings tile", "Add “Talk to SL” from the Quick Settings edit menu.")
         Bullet(Icons.Filled.Mic, "Hands-free “Hey SL”", "Optional, in Settings › Voice. Works while the screen is on and stops after 30 minutes to save battery.")

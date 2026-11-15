@@ -212,6 +212,19 @@
             </intent-filter>
         </service>
 
+        <!-- 1x1 "Talk to SL" home screen widget. -->
+        <receiver
+            android:name=".widget.TalkWidgetProvider"
+            android:exported="false"
+            android:label="@string/tile_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_talk_info" />
+        </receiver>
+
         <receiver
             android:name=".automation.ReminderReceiver"
             android:exported="false" />

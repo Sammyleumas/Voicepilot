@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">SL</string>
     <string name="tile_label">Talk to SL</string>
+    <string name="widget_description">Tap to talk to SL</string>
     <string name="shortcut_talk_short">Talk</string>
     <string name="shortcut_talk_long">Talk to SL</string>
     <string name="shortcut_history_short">History</string>

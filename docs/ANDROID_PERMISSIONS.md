@@ -37,6 +37,7 @@ VoicePilot uses the phone's default speech recognizer. If it reports “busy” 
 | Hands-free session | `HandsFreeService` (foreground, type `microphone`) loops the speech recognizer and matches “Hey VoicePilot”. | Must be started while VoicePilot is open (Android 14 rule for microphone services). Stops after 30 minutes or when the screen turns off. Some recognizers play a beep each cycle. Costs battery. |
 | Always-on, screen-off hotword | `AlwaysOnHotwordDetector` / `HotwordDetectionService` | **Not available**: requires system-privileged sound models available only to preinstalled assistants. A third-party keyword spotter (e.g. Picovoice Porcupine) could replace the recognizer loop through the `WakeWordEngine` interface but still needs a microphone foreground service. |
 | Quick Settings tile, app shortcut | `TalkTileService`, `shortcuts.xml` | Always available |
+| Home screen Talk button | 1x1 widget `TalkWidgetProvider`, pinned shortcut via `ShortcutManagerCompat.requestPinShortcut` (Settings › Voice, onboarding) | The launcher asks the user to confirm; some launchers only allow adding widgets by hand |
 
 Locked-screen and screen-off behaviour **has not been verified on hardware**; see the device checklist in [TESTING.md](TESTING.md).
 

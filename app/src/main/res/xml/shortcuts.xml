@@ -3,7 +3,7 @@
     <shortcut
         android:shortcutId="talk"
         android:enabled="true"
-        android:icon="@drawable/ic_shortcut_mic"
+        android:icon="@mipmap/ic_shortcut_talk"
         android:shortcutShortLabel="@string/shortcut_talk_short"
         android:shortcutLongLabel="@string/shortcut_talk_long">
         <intent

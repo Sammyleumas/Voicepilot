@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Round violet-to-blue button used by the home screen widget. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <gradient
+        android:angle="315"
+        android:startColor="#FF7C5CFF"
+        android:endColor="#FF4C8DFF" />
+</shape>

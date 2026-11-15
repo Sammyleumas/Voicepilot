@@ -142,6 +142,8 @@ class SettingsViewModel @Inject constructor(
 
     fun consumeMessage() { _message.value = null }
 
+    fun showMessage(text: String) { _message.value = text }
+
     /** Starts the store purchase flow; only offered when billing is configured. */
     fun startPurchase() {
         viewModelScope.launch {
