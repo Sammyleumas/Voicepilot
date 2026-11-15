@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="vp_background">#FF0B0B12</color>
+    <color name="vp_surface">#FF13131D</color>
+    <color name="vp_primary">#FF7C5CFF</color>
+    <color name="vp_launcher_background">#FF0B0B12</color>
+</resources>

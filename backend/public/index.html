@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VoicePilot AI</title>
+<meta name="description" content="VoicePilot AI turns what you say into actions on your Android phone. Download the test build.">
+<meta name="theme-color" content="#0b0b12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Single dark look, matching the app. One column; download action first. */
+:root {
+  color-scheme: dark;
+  --ink: #0b0b12; --surface: #13131d; --line: #262636; --violet: #7c5cff; --violet-soft: #b4a3ff; --blue: #4c8dff;
+  --text: #f2f1f7; --muted: #a9a7b8; --ok: #3ddc97; --bad: #ff6b6b;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ink); color: var(--text); }
+body { font: 16px/1.6 var(--body); padding: max(28px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 56px max(16px, env(safe-area-inset-left)); }
+main { max-width: 760px; margin: 0 auto; display: grid; gap: 40px; }
+.eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--violet-soft); font-weight: 600; }
+h1 { font: 600 clamp(34px, 7vw, 56px)/1.05 var(--display); letter-spacing: -0.03em; margin: 10px 0 14px; text-wrap: balance; }
+h2 { font: 600 20px/1.3 var(--display); margin: 0 0 12px; }
+p { margin: 0; color: var(--muted); max-width: 62ch; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 22px; border-radius: 14px; font: 600 15px var(--body); text-decoration: none; }
+.btn.primary { background: linear-gradient(135deg, var(--violet), var(--blue)); color: #fff; }
+.btn.ghost { border: 1px solid var(--line); color: var(--text); }
+.btn:focus-visible { outline: 3px solid var(--violet-soft); outline-offset: 3px; }
+.btn svg { width: 20px; height: 20px; }
+.small { font-size: 13px; color: var(--muted); margin-top: 10px; }
+ol.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; counter-reset: s; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; color: var(--muted); }
+ol.steps li::before { content: counter(s); width: 32px; height: 32px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); color: var(--text); display: grid; place-items: center; font: 600 14px var(--display); }
+ol.steps b { color: var(--text); font-weight: 600; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.tile b { display: block; margin-bottom: 4px; }
+.tile span { color: var(--muted); font-size: 14px; }
+.say { font-family: var(--display); color: var(--violet-soft); }
+.status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">VoicePilot AI · Android</div>
+    <h1>Your phone should understand you</h1>
+    <p>Speak naturally and VoicePilot opens apps, sets alarms and reminders, prepares WhatsApp, SMS and Telegram messages, and runs your routines. It always shows you what it's about to do, and you tap Send yourself.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Sammyleumas/Voicepilot/releases/latest">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 20h14v-2H5zm7-3 6-6-1.4-1.4L13 13.2V3h-2v10.2L7.4 9.6 6 11z"/></svg>
+        Download for Android
+      </a>
+      <a class="btn ghost" href="/demo.html">Try the demo in your browser</a>
+    </div>
+    <p class="small">Test build for Android 10 or newer · about 16 MB · not yet on the Play Store</p>
+  </header>
+
+  <section>
+    <h2>Install on your phone</h2>
+    <ol class="steps">
+      <li><span>Open this page on your Android phone and tap <b>Download for Android</b>.</span></li>
+      <li><span>On the release page, tap the file named <b>VoicePilot-AI-build-….apk</b>.</span></li>
+      <li><span>If Android asks, allow your browser to <b>install unknown apps</b>, then tap <b>Install</b>.</span></li>
+      <li><span>Open <b>VoicePilot AI</b>, follow the short setup, and tap the microphone.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Things to try</h2>
+    <div class="grid">
+      <div class="tile"><b>Messages</b><span class="say">“Send Samuel a WhatsApp message saying I'm on my way”</span></div>
+      <div class="tile"><b>Other apps</b><span class="say">“Message Tunde on Telegram saying the meeting has moved”</span></div>
+      <div class="tile"><b>Time</b><span class="say">“Remind me to call Mum tomorrow at 9”</span></div>
+      <div class="tile"><b>Routines</b><span class="say">“I'm going to sleep”</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <span class="status"><span class="dot" id="dot"></span><span id="status">Checking the AI service…</span></span>
+    <p style="margin-top:8px">Everyday commands work on the phone without internet. The AI service is only used for requests the phone doesn't understand.</p>
+  </footer>
+</main>
+<script>
+fetch("/healthz", { cache: "no-store" }).then((r) => r.json()).then((h) => {
+  const ready = h.geminiKey && h.auth !== "missing";
+  document.getElementById("dot").style.background = ready ? "var(--ok)" : "var(--bad)";
+  document.getElementById("status").textContent = ready ? "AI service online" : "AI service not configured yet";
+}).catch(() => { document.getElementById("status").textContent = "AI service status unavailable"; });
+</script>
+</body>
+</html>
