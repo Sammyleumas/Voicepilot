@@ -1,4 +1,6 @@
-# VoicePilot AI
+# SL
+
+_Formerly VoicePilot AI. The repository and package name (`com.voicepilot.ai`) are unchanged so updates install over earlier builds._
 
 **Your phone should understand you, not the other way round.**
 

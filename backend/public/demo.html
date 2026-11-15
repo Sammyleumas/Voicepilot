@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>VoicePilot AI Preview</title>
+<title>SL Preview</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
@@ -112,14 +112,14 @@ canvas.wave { width: 100%; height: 40px; display: block; }
 <div class="wrap">
   <section>
     <div class="eyebrow">Interactive preview</div>
-    <h1>See how VoicePilot AI handles a request</h1>
+    <h1>See how SL handles a request</h1>
     <p class="lede">This page runs a browser simulation of the app's screens and conversation flow, using the same wording and steps as the real Android code. Tap a scenario, press the microphone, or type into the phone.</p>
 
     <h2>Try a scenario</h2>
     <div class="scenarios">
       <button class="scenario" data-say="Send Samuel a WhatsApp message"><b>WhatsApp, step by step</b><span>Asks what to say, finds two Samuels, lets you pick, then asks before opening WhatsApp.</span></button>
       <button class="scenario" data-say="Send my brother a WhatsApp message saying I will call him after work"><b>“My brother” nickname</b><span>Uses personal memory and rewrites “call him” to “call you”.</span></button>
-      <button class="scenario" data-say="Message Tunde on Telegram saying the meeting has moved"><b>Other apps: Telegram, SMS…</b><span>Name the app and VoicePilot hands the message to it. “by SMS” uses your SMS app.</span></button>
+      <button class="scenario" data-say="Message Tunde on Telegram saying the meeting has moved"><b>Other apps: Telegram, SMS…</b><span>Name the app and SL hands the message to it. “by SMS” uses your SMS app.</span></button>
       <button class="scenario" data-say="I'm going to sleep"><b>Bedtime routine</b><span>Plans Do Not Disturb plus an alarm and asks for the wake-up time.</span></button>
       <button class="scenario" data-say="Turn on the flashlight and set a timer for 5 minutes"><b>Two actions at once</b><span>Low-risk steps run without asking and report together.</span></button>
       <button class="scenario" data-say="Transfer 5000 naira to Ada"><b>Something it won't do</b><span>Payments are outside the allowlist, so nothing opens.</span></button>
@@ -137,7 +137,7 @@ canvas.wave { width: 100%; height: 40px; display: block; }
 
   <div class="phone-col">
     <div class="phone" id="phone">
-      <div class="statusbar"><span id="clock">18:13</span><span>VoicePilot AI</span></div>
+      <div class="statusbar"><span id="clock">18:13</span><span>SL</span></div>
       <div class="screen" id="screen"></div>
       <div class="composer" id="composer" hidden>
         <input id="typed" aria-label="Type a request" placeholder="Type a message…" autocomplete="off">
@@ -336,7 +336,7 @@ canvas.wave { width: 100%; height: 40px; display: block; }
     if (t.kind === "err") return `<div class="result">${icons.err}<p>${esc(t.text)}</p></div>`;
     if (t.kind === "answer") return `<p class="center">${esc(t.text)}</p>`;
     if (t.kind === "choice") return `<div class="card"><p>${esc(t.q)}</p>${t.options.map((o, i) => `<button class="choice" data-choice="${i}">${i + 1}. ${esc(o)}</button>`).join("")}<button class="choice" data-choice="none" style="color:var(--muted)">None of these</button></div>`;
-    if (t.kind === "confirm") return `<div class="card"><div class="label">${icons.shield} Please review</div><p>${t.step && t.step.includes("<br>") ? t.step : esc(t.step || "")}</p>${S.pending?.kind === "confirm" ? '<div class="hint">You\'ll complete the final step in the other app — VoicePilot won\'t send anything on its own.</div>' : ""}<div class="btns"><button class="btn" data-confirm="no">Cancel</button><button class="btn primary" data-confirm="yes">Go ahead</button></div></div>`;
+    if (t.kind === "confirm") return `<div class="card"><div class="label">${icons.shield} Please review</div><p>${t.step && t.step.includes("<br>") ? t.step : esc(t.step || "")}</p>${S.pending?.kind === "confirm" ? '<div class="hint">You\'ll complete the final step in the other app — SL won\'t send anything on its own.</div>' : ""}<div class="btns"><button class="btn" data-confirm="no">Cancel</button><button class="btn primary" data-confirm="yes">Go ahead</button></div></div>`;
     return "";
   }
   const stColor = (s) => ({ Completed: "var(--ok)", Prepared: "var(--ok)", Answered: "var(--ok)", Cancelled: "var(--muted)" })[s] || "var(--bad)";
@@ -345,14 +345,14 @@ canvas.wave { width: 100%; height: 40px; display: block; }
     $("#composer").hidden = S.view !== "conversation";
     const v = S.view;
     if (v === "onboarding") {
-      screen.innerHTML = `<div class="onb"><div class="eyebrow" style="text-align:center">VOICEPILOT AI</div><div class="badge">${icons.mic}</div>
-        <h3>Your phone should understand you</h3><p>Speak naturally. VoicePilot turns what you say into actions on your phone and always tells you exactly what it did.</p></div>
+      screen.innerHTML = `<div class="onb"><div class="eyebrow" style="text-align:center">SL</div><div class="badge">${icons.mic}</div>
+        <h3>Your phone should understand you</h3><p>Speak naturally. SL turns what you say into actions on your phone and always tells you exactly what it did.</p></div>
         <button class="btn primary" id="getStarted" style="width:100%;height:48px">Get started</button>`;
       return;
     }
     if (v === "home") {
       screen.innerHTML = `
-        <div class="topbar"><div class="brand">VOICEPILOT AI<small>Voice ready · On-device commands</small></div>
+        <div class="topbar"><div class="brand">SL<small>Voice ready · On-device commands</small></div>
           <button class="iconbtn" data-go="history" aria-label="Automation history">${icons.history}</button>
           <button class="iconbtn" data-go="settings" aria-label="Settings">${icons.gear}</button></div>
         <div class="center greet">Good evening.</div>

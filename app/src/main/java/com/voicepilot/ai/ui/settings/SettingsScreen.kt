@@ -134,7 +134,7 @@ fun SettingsScreen(
             GroupCard {
                 SettingRow(
                     "Microphone",
-                    if (caps[Capability.MICROPHONE] == true) "Allowed while you use VoicePilot" else "Not allowed — you can still type",
+                    if (caps[Capability.MICROPHONE] == true) "Allowed while you use SL" else "Not allowed — you can still type",
                     Icons.Filled.Mic,
                     onClick = { if (caps[Capability.MICROPHONE] == true) context.startSafely(capabilities.appDetailsSettings()) else request(setOf(Capability.MICROPHONE)) },
                 )
@@ -142,7 +142,7 @@ fun SettingsScreen(
                 SettingRow("Voice", s.voiceName ?: "System default", Icons.Filled.RecordVoiceOver, onClick = { viewModel.loadVoices(); dialog = SettingsDialog.VOICE })
                 SwitchRow(
                     "Use the phone's speech popup",
-                    "Turn on if voice input says the recognizer is busy. VoicePilot also switches automatically when it has to.",
+                    "Turn on if voice input says the recognizer is busy. SL also switches automatically when it has to.",
                     s.useSystemSpeechDialog,
                     { v -> viewModel.update { it.copy(useSystemSpeechDialog = v) } },
                     Icons.Filled.Mic,
@@ -154,7 +154,7 @@ fun SettingsScreen(
                         WakeWordStatus.Listening -> "Listening for “${s.wakePhrase}” · stops after 30 min or when the screen turns off"
                         WakeWordStatus.Paused -> "Paused while you speak"
                         is WakeWordStatus.Unavailable -> (wake as WakeWordStatus.Unavailable).reason
-                        WakeWordStatus.Disabled -> "Say “Hey VoicePilot” without touching the phone. Uses more battery."
+                        WakeWordStatus.Disabled -> "Say “Hey SL” without touching the phone. Uses more battery."
                     },
                     wake == WakeWordStatus.Listening || wake == WakeWordStatus.Paused,
                     { enabled ->
@@ -165,7 +165,7 @@ fun SettingsScreen(
                 )
                 SettingRow(
                     "Default assistant",
-                    "Make VoicePilot open with the assist gesture or long-press Home",
+                    "Make SL open with the assist gesture or long-press Home",
                     Icons.Filled.Widgets,
                     onClick = { context.startSafely(Intent(android.provider.Settings.ACTION_VOICE_INPUT_SETTINGS)) },
                 )
@@ -213,7 +213,7 @@ fun SettingsScreen(
                 SwitchRow(
                     "Send replies without asking",
                     if (s.confirmationMode == ConfirmationMode.NEVER) {
-                        "Replies to messages are sent as soon as you say them. Only turn on if you trust what VoicePilot hears."
+                        "Replies to messages are sent as soon as you say them. Only turn on if you trust what SL hears."
                     } else {
                         "Available when “Ask before running” is set to Never ask."
                     },
@@ -237,7 +237,7 @@ fun SettingsScreen(
                 SettingRow("Clear history", null, Icons.Filled.DeleteForever, onClick = { dialog = SettingsDialog.CLEAR_HISTORY })
                 SettingRow("Clear memory", null, Icons.Filled.DeleteForever, onClick = { dialog = SettingsDialog.CLEAR_MEMORY })
                 SettingRow("Delete notes and tasks", null, Icons.Filled.DeleteForever, onClick = { dialog = SettingsDialog.CLEAR_NOTES })
-                SettingRow("Delete all VoicePilot data", "History, memory, notes, cached notifications and stored keys", Icons.Filled.Security, onClick = { dialog = SettingsDialog.CLEAR_ALL })
+                SettingRow("Delete all SL data", "History, memory, notes, cached notifications and stored keys", Icons.Filled.Security, onClick = { dialog = SettingsDialog.CLEAR_ALL })
             }
 
             SectionHeader("Subscription")
@@ -252,7 +252,7 @@ fun SettingsScreen(
 
             SectionHeader("About")
             Text(
-                "VoicePilot AI ${BuildConfig.VERSION_NAME}. On-device commands work offline. AI requests send only your command text to the provider you chose.",
+                "SL ${BuildConfig.VERSION_NAME}. On-device commands work offline. AI requests send only your command text to the provider you chose.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = Spacing.xxl),
@@ -302,7 +302,7 @@ private fun SettingsDialogs(
     when (dialog) {
         null -> Unit
         SettingsDialog.NAME -> TextInputDialog("Your name", s.userName, close, { v -> vm.update { it.copy(userName = v) }; close() }, maxLength = 40)
-        SettingsDialog.ASSISTANT_NAME -> TextInputDialog("Assistant name", s.assistantName, close, { v -> vm.update { it.copy(assistantName = v.ifBlank { "VoicePilot" }) }; close() }, maxLength = 30)
+        SettingsDialog.ASSISTANT_NAME -> TextInputDialog("Assistant name", s.assistantName, close, { v -> vm.update { it.copy(assistantName = v.ifBlank { "SL" }) }; close() }, maxLength = 30)
         SettingsDialog.COUNTRY -> TextInputDialog("Country calling code", s.defaultCountryCode, close, { v -> vm.update { it.copy(defaultCountryCode = v.filter(Char::isDigit).ifBlank { "234" }) }; close() }, keyboardType = KeyboardType.Number, supporting = "234 for Nigeria, 44 for the UK, 1 for the US.", maxLength = 4)
         SettingsDialog.LANGUAGE -> ChoiceDialog("Language", LANGUAGES.map { it.first }, s.language, { tag -> LANGUAGES.first { it.first == tag }.second }, close, { v -> vm.update { it.copy(language = v) }; close() })
         SettingsDialog.THEME -> ChoiceDialog("Theme", ThemePreference.entries, s.theme, { it.label }, close, { v -> vm.update { it.copy(theme = v) }; close() })
@@ -318,7 +318,7 @@ private fun SettingsDialogs(
                 when (it) {
                     AiProviderType.LOCAL_ONLY -> "Private and offline. Understands common commands."
                     AiProviderType.GEMINI_DIRECT -> "Flexible requests using your own Google Gemini API key."
-                    AiProviderType.VOICEPILOT_CLOUD -> "Uses a VoicePilot backend that keeps the provider key on the server."
+                    AiProviderType.VOICEPILOT_CLOUD -> "Uses a SL backend that keeps the provider key on the server."
                 }
             },
         )
@@ -328,7 +328,7 @@ private fun SettingsDialogs(
             secret = true,
             supporting = "Encrypted with the Android Keystore and only sent to Google. Leave empty and save to remove it.",
         )
-        SettingsDialog.CLOUD_URL -> TextInputDialog("Cloud URL", s.cloudBaseUrl, close, { v -> vm.update { it.copy(cloudBaseUrl = v) }; close() }, keyboardType = KeyboardType.Uri, supporting = "HTTPS address of your VoicePilot backend.")
+        SettingsDialog.CLOUD_URL -> TextInputDialog("Cloud URL", s.cloudBaseUrl, close, { v -> vm.update { it.copy(cloudBaseUrl = v) }; close() }, keyboardType = KeyboardType.Uri, supporting = "HTTPS address of your SL backend.")
         SettingsDialog.CLOUD_TOKEN -> TextInputDialog("Access token", "", close, { v -> vm.setSecret(SecretStore.Secret.CLOUD_TOKEN, v); close() }, secret = true, maxLength = 4000)
         SettingsDialog.CONFIRMATION -> ChoiceDialog(
             "Ask before running", ConfirmationMode.entries, s.confirmationMode, { it.label }, close, { v -> vm.update { it.copy(confirmationMode = v) }; close() },
@@ -347,7 +347,7 @@ private fun SettingsDialogs(
         )
         SettingsDialog.RETENTION -> ChoiceDialog("Keep history for", listOf(1, 7, 30, 90, 365), s.historyRetentionDays, { "$it days" }, close, { v -> vm.update { it.copy(historyRetentionDays = v) }; close() })
         SettingsDialog.CLEAR_HISTORY -> ConfirmDialog("Clear history?", "All command history on this device will be deleted.", "Clear", close, vm::clearHistory)
-        SettingsDialog.CLEAR_MEMORY -> ConfirmDialog("Clear memory?", "Nicknames and preferences VoicePilot remembered will be deleted.", "Clear", close, vm::clearMemory)
+        SettingsDialog.CLEAR_MEMORY -> ConfirmDialog("Clear memory?", "Nicknames and preferences SL remembered will be deleted.", "Clear", close, vm::clearMemory)
         SettingsDialog.CLEAR_NOTES -> ConfirmDialog("Delete notes and tasks?", "This can't be undone.", "Delete", close, vm::clearNotes)
         SettingsDialog.CLEAR_ALL -> ConfirmDialog("Delete all data?", "History, memory, notes, tasks, cached notifications and stored keys will be deleted from this device.", "Delete everything", close, vm::clearAllData)
     }

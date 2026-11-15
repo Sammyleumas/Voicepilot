@@ -155,7 +155,7 @@ class CloudProxyProvider(
     private val timeoutMillis: Long = 25_000,
 ) : LlmProvider {
     override val id = "voicepilot-cloud"
-    override val displayName = "VoicePilot Cloud"
+    override val displayName = "SL Cloud"
 
     override suspend fun isConfigured(): Boolean = baseUrl().startsWith("https://") && !authToken().isNullOrBlank()
 

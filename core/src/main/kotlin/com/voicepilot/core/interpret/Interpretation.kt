@@ -33,7 +33,7 @@ sealed interface Interpretation {
 data class ConversationContext(
     val recentTurns: List<Pair<String, String>> = emptyList(),
     val userName: String = "",
-    val assistantName: String = "VoicePilot",
+    val assistantName: String = "SL",
     val nowIso: String = "",
     val timeZone: String = "",
 )

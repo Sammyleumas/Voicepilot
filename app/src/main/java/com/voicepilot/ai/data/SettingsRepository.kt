@@ -55,7 +55,8 @@ class SettingsRepository @Inject constructor(
         val d = AssistantSettings()
         return AssistantSettings(
             userName = p[K.USER_NAME] ?: d.userName,
-            assistantName = p[K.ASSISTANT_NAME] ?: d.assistantName,
+            // Earlier builds stored the old default name; move those users to the new one.
+            assistantName = p[K.ASSISTANT_NAME]?.takeUnless { it == LEGACY_NAME } ?: d.assistantName,
             language = p[K.LANGUAGE] ?: d.language,
             theme = enumOr(p[K.THEME], d.theme),
             responseStyle = enumOr(p[K.RESPONSE_STYLE], d.responseStyle),
@@ -63,7 +64,7 @@ class SettingsRepository @Inject constructor(
             speechRate = p[K.SPEECH_RATE] ?: d.speechRate,
             voiceName = p[K.VOICE_NAME],
             wakeWordEnabled = p[K.WAKE_ENABLED] ?: d.wakeWordEnabled,
-            wakePhrase = p[K.WAKE_PHRASE] ?: d.wakePhrase,
+            wakePhrase = p[K.WAKE_PHRASE]?.takeUnless { it == LEGACY_WAKE_PHRASE } ?: d.wakePhrase,
             aiProvider = enumOr(p[K.AI_PROVIDER], d.aiProvider),
             aiModel = p[K.AI_MODEL] ?: d.aiModel,
             cloudBaseUrl = p[K.CLOUD_URL] ?: d.cloudBaseUrl,
@@ -115,6 +116,11 @@ class SettingsRepository @Inject constructor(
 
     private inline fun <reified E : Enum<E>> enumOr(value: String?, default: E): E =
         value?.let { v -> enumValues<E>().firstOrNull { it.name == v } } ?: default
+
+    private companion object {
+        const val LEGACY_NAME = "VoicePilot"
+        const val LEGACY_WAKE_PHRASE = "hey voicepilot"
+    }
 
     private object K {
         val USER_NAME = stringPreferencesKey("user_name")

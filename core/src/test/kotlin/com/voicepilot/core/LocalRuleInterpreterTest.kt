@@ -23,7 +23,7 @@ class LocalRuleInterpreterTest {
 
     @Test
     fun `opens apps with filler words`() {
-        val r = single("Hey VoicePilot, please open WhatsApp")
+        val r = single("Hey SL, please open WhatsApp")
         assertEquals(ActionId.OPEN_APP, r.action)
         assertEquals("WhatsApp", r.params[Params.APP])
         assertEquals("YouTube", single("could you launch the YouTube app for me").params[Params.APP])

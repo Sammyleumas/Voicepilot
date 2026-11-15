@@ -99,7 +99,7 @@ class HandsFreeService : LifecycleService() {
             )
         } catch (e: Exception) {
             // Android 12+ refuses to start a microphone service from the background.
-            events.setStatus(WakeWordStatus.Unavailable("Start hands-free mode from the VoicePilot app."))
+            events.setStatus(WakeWordStatus.Unavailable("Start hands-free mode from the SL app."))
             stopSelf()
             return START_NOT_STICKY
         }
@@ -159,7 +159,7 @@ class HandsFreeService : LifecycleService() {
         )
         val alert = NotificationCompat.Builder(this, NotificationChannels.ASSISTANT)
             .setSmallIcon(R.drawable.ic_stat_voicepilot)
-            .setContentTitle("VoicePilot heard you")
+            .setContentTitle("SL heard you")
             .setContentText(detection.trailingCommand?.let { "Tap to continue: “$it”" } ?: "Tap to talk")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_CALL)

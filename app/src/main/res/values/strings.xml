@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">VoicePilot AI</string>
-    <string name="tile_label">Talk to VoicePilot</string>
+    <string name="app_name">SL</string>
+    <string name="tile_label">Talk to SL</string>
     <string name="shortcut_talk_short">Talk</string>
-    <string name="shortcut_talk_long">Talk to VoicePilot</string>
+    <string name="shortcut_talk_long">Talk to SL</string>
     <string name="shortcut_history_short">History</string>
     <string name="channel_reminders">Reminders</string>
-    <string name="channel_reminders_desc">Reminders you create with VoicePilot</string>
+    <string name="channel_reminders_desc">Reminders you create with SL</string>
     <string name="channel_session">Hands-free session</string>
-    <string name="channel_session_desc">Shown while VoicePilot is listening for its wake phrase</string>
+    <string name="channel_session_desc">Shown while SL is listening for its wake phrase</string>
     <string name="channel_assistant">Assistant alerts</string>
-    <string name="channel_assistant_desc">Wake phrase detections while VoicePilot is in the background</string>
-    <string name="recognition_service_label">VoicePilot speech (uses your device recognizer)</string>
+    <string name="channel_assistant_desc">Wake phrase detections while SL is in the background</string>
+    <string name="recognition_service_label">SL speech (uses your device recognizer)</string>
 </resources>

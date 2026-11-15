@@ -150,6 +150,16 @@ class UtilitiesTest {
 
     @Test
     fun `wake phrase matching`() {
+        val sl = WakePhraseMatcher("hey sl")
+        assertEquals("open whatsapp", sl.match("Hey SL open WhatsApp")!!.trailingCommand)
+        assertEquals("set a timer", sl.stripWakePhrase("hey s l, set a timer"))
+        assertNotNull(sl.match("hey es el"))
+        assertEquals("what time is it", sl.match("okay ess ell what time is it")!!.trailingCommand)
+        assertEquals("call ada", sl.match("SL call Ada")!!.trailingCommand)
+        assertNull(sl.match("hey sell my car"), "No fuzzy matching for short names")
+        assertNull(sl.match("slow down"))
+        assertNull(sl.match("hey siri"))
+
         val m = WakePhraseMatcher("hey voicepilot")
         assertEquals("open whatsapp", m.match("Hey VoicePilot open WhatsApp")!!.trailingCommand)
         assertNotNull(m.match("hey voice pilot"))

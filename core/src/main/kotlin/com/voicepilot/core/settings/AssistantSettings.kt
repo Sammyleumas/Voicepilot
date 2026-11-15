@@ -17,7 +17,7 @@ enum class AiProviderType(val label: String) {
     /** Gemini called directly with a key the user supplies (stored encrypted on-device). */
     GEMINI_DIRECT("Gemini (your API key)"),
     /** VoicePilot backend proxy that holds the provider key server-side. */
-    VOICEPILOT_CLOUD("VoicePilot Cloud"),
+    VOICEPILOT_CLOUD("SL Cloud"),
 }
 
 /** Where "send X a message" goes when the user doesn't name an app. */
@@ -33,7 +33,7 @@ enum class ThemePreference(val label: String) { SYSTEM("System"), DARK("Dark"), 
  */
 data class AssistantSettings(
     val userName: String = "",
-    val assistantName: String = "VoicePilot",
+    val assistantName: String = "SL",
     val language: String = "en-NG",
     val theme: ThemePreference = ThemePreference.DARK,
     val responseStyle: ResponseStyle = ResponseStyle.FRIENDLY,
@@ -41,7 +41,7 @@ data class AssistantSettings(
     val speechRate: Float = 1.0f,
     val voiceName: String? = null,
     val wakeWordEnabled: Boolean = false,
-    val wakePhrase: String = "hey voicepilot",
+    val wakePhrase: String = "hey sl",
     val aiProvider: AiProviderType = AiProviderType.LOCAL_ONLY,
     val aiModel: String = DEFAULT_GEMINI_MODEL,
     val cloudBaseUrl: String = "",

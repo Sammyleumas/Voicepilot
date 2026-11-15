@@ -88,7 +88,7 @@ class AndroidCapabilities @Inject constructor(
 
     companion object {
         val DESCRIPTIONS: Map<Capability, String> = mapOf(
-            Capability.MICROPHONE to "Hear your voice commands while you're using VoicePilot. You can always type instead.",
+            Capability.MICROPHONE to "Hear your voice commands while you're using SL. You can always type instead.",
             Capability.CONTACTS to "Find the right person when you ask to message or call someone. Contacts are read on-device and never uploaded.",
             Capability.POST_NOTIFICATIONS to "Show the reminders you create and the hands-free session indicator.",
             Capability.NOTIFICATION_LISTENER to "Optional: read out and summarise notifications from apps you choose. Nothing is uploaded or stored by default.",

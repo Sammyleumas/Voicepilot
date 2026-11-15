@@ -260,7 +260,7 @@ class AssistantSession(
                 }
                 is Preflight.NeedsCapabilities -> {
                     pending = Pending.Capabilities(draft, p.missing)
-                    val msg = "To ${ActionDescriber.describe(request).replaceFirstChar { it.lowercase() }}, VoicePilot needs " +
+                    val msg = "To ${ActionDescriber.describe(request).replaceFirstChar { it.lowercase() }}, SL needs " +
                         "${p.missing.joinToString(" and ") { it.displayName }} access. Grant it, then tap Retry."
                     return reply(msg, AssistantStatus.NeedsPermission(p.missing, msg))
                 }
@@ -293,7 +293,7 @@ class AssistantSession(
         val p = executor.preflight(request)
         if (p is Preflight.NeedsCapabilities && Capability.CONTACTS in p.missing) {
             pending = Pending.Capabilities(draft, p.missing)
-            val msg = "To find $spoken in your contacts, VoicePilot needs Contacts access. Grant it, then tap Retry. " +
+            val msg = "To find $spoken in your contacts, SL needs Contacts access. Grant it, then tap Retry. " +
                 "You can also say the phone number instead."
             return RecipientOutcome.Stop(reply(msg, AssistantStatus.NeedsPermission(p.missing, msg)))
         }

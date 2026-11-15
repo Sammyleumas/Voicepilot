@@ -168,8 +168,8 @@ private fun ColumnScope.Actions(primary: String, onPrimary: () -> Unit, secondar
 @Composable
 private fun ColumnScope.Welcome(next: () -> Unit) {
     Spacer(Modifier.height(Spacing.xxl))
-    Text("VOICEPILOT AI", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.CenterHorizontally))
-    Header(Icons.Filled.Mic, "Your phone should understand you", "Speak naturally. VoicePilot turns what you say into actions on your phone — and always tells you exactly what it did.")
+    Text("SL", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.CenterHorizontally))
+    Header(Icons.Filled.Mic, "Your phone should understand you", "Speak naturally. SL turns what you say into actions on your phone — and always tells you exactly what it did.")
     Actions("Get started", next)
 }
 
@@ -187,12 +187,12 @@ private fun ColumnScope.Features(next: () -> Unit) {
 
 @Composable
 private fun ColumnScope.Privacy(next: () -> Unit) {
-    Header(Icons.Filled.Shield, "Private by design", "You stay in control of what VoicePilot can see and do.")
+    Header(Icons.Filled.Shield, "Private by design", "You stay in control of what SL can see and do.")
     VpCard {
         Bullet(Icons.Filled.PhoneAndroid, "On-device first", "History, notes, memory and contacts stay on this phone. Nothing is backed up to the cloud.")
         Bullet(Icons.Filled.AutoAwesome, "AI is optional", "If you turn it on, only the text of your command is sent to the provider you choose.")
         Bullet(Icons.Filled.TouchApp, "You approve sensitive actions", "Messages, calendar events and other sensitive steps always show you a preview first.")
-        Bullet(Icons.Filled.Lock, "Permissions when needed", "VoicePilot asks for access only when you use a feature, and explains why.")
+        Bullet(Icons.Filled.Lock, "Permissions when needed", "SL asks for access only when you use a feature, and explains why.")
     }
     Actions("I understand", next)
 }
@@ -200,7 +200,7 @@ private fun ColumnScope.Privacy(next: () -> Unit) {
 @Composable
 private fun ColumnScope.VoiceStep(granted: Boolean, refresh: () -> Unit, next: () -> Unit) {
     val request = rememberCapabilityRequester { refresh() }
-    Header(Icons.Filled.Mic, "Talk to VoicePilot", "The microphone is used only while you're talking to VoicePilot, and Android shows an indicator whenever it's on.")
+    Header(Icons.Filled.Mic, "Talk to SL", "The microphone is used only while you're talking to SL, and Android shows an indicator whenever it's on.")
     if (granted) {
         Row(Modifier.align(Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -258,14 +258,14 @@ private fun ColumnScope.AiStep(current: AiProviderType, choose: (AiProviderType)
 @Composable
 private fun ColumnScope.AssistantStep(next: () -> Unit) {
     val context = LocalContext.current
-    Header(Icons.Filled.TouchApp, "Open VoicePilot faster", "Choose the ways you'd like to start talking.")
+    Header(Icons.Filled.TouchApp, "Open SL faster", "Choose the ways you'd like to start talking.")
     VpCard {
-        Bullet(Icons.Filled.PhoneAndroid, "Default assistant", "Long-press Home or use the assist gesture to open VoicePilot. Set it in Android's assistant settings.")
+        Bullet(Icons.Filled.PhoneAndroid, "Default assistant", "Long-press Home or use the assist gesture to open SL. Set it in Android's assistant settings.")
         Spacer(Modifier.height(Spacing.sm))
         SecondaryButton("Open assistant settings", onClick = { context.startSafely(Intent(android.provider.Settings.ACTION_VOICE_INPUT_SETTINGS)) })
         Spacer(Modifier.height(Spacing.md))
-        Bullet(Icons.Filled.Apps, "Quick Settings tile", "Add “Talk to VoicePilot” from the Quick Settings edit menu.")
-        Bullet(Icons.Filled.Mic, "Hands-free “Hey VoicePilot”", "Optional, in Settings › Voice. Works while the screen is on and stops after 30 minutes to save battery.")
+        Bullet(Icons.Filled.Apps, "Quick Settings tile", "Add “Talk to SL” from the Quick Settings edit menu.")
+        Bullet(Icons.Filled.Mic, "Hands-free “Hey SL”", "Optional, in Settings › Voice. Works while the screen is on and stops after 30 minutes to save battery.")
     }
     Actions("Continue", next)
 }
@@ -278,5 +278,5 @@ private fun ColumnScope.Done(finish: () -> Unit) {
             Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = Spacing.xs))
         }
     }
-    Actions("Start using VoicePilot", finish)
+    Actions("Start using SL", finish)
 }

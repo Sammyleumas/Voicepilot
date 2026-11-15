@@ -76,7 +76,7 @@ jobs:
         run: |
           set -e
           src=$(ls apk/*.apk | head -n 1)
-          mv "$src" "VoicePilot-AI-build-${{ github.run_number }}.apk"
+          mv "$src" "SL-build-${{ github.run_number }}.apk"
           ls -l *.apk
 
       - name: Create release
@@ -84,14 +84,14 @@ jobs:
         with:
           tag_name: voicepilot-build-${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: VoicePilot AI — test build ${{ github.run_number }}
+          name: SL — test build ${{ github.run_number }}
           make_latest: true
-          files: VoicePilot-AI-build-${{ github.run_number }}.apk
+          files: SL-build-${{ github.run_number }}.apk
           body: |
-            Installable test build of VoicePilot AI (Android 10 or newer).
+            Installable test build of SL (formerly VoicePilot AI) (Android 10 or newer).
 
             **Install on your phone**
-            1. Open this page on your Android phone and tap **VoicePilot-AI-build-${{ github.run_number }}.apk** below.
+            1. Open this page on your Android phone and tap **SL-build-${{ github.run_number }}.apk** below.
             2. When Android asks, allow your browser to install unknown apps.
             3. Open the downloaded file and tap **Install**. Newer builds install over older ones.
 

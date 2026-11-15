@@ -200,7 +200,7 @@ class AssistantSessionTest {
     @Test
     fun `wake phrase is stripped from typed or spoken input`() = runTest {
         val env = TestEnv()
-        env.session.submit("Hey voice pilot open the camera")
+        env.session.submit("Hey SL open the camera")
         assertEquals(ActionId.LAUNCH_CAMERA, env.handlers.executed.single().action)
     }
 

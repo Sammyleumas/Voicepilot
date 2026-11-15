@@ -161,7 +161,7 @@ class DoNotDisturbHandler @Inject constructor(@ApplicationContext private val co
     override suspend fun execute(request: ActionRequest): ActionResult {
         val nm = context.getSystemService(NotificationManager::class.java)
         if (!nm.isNotificationPolicyAccessGranted) {
-            return failed("VoicePilot needs Do Not Disturb access first.", FailureReason.PERMISSION_MISSING, true)
+            return failed("SL needs Do Not Disturb access first.", FailureReason.PERMISSION_MISSING, true)
         }
         val on = request.param(Params.ENABLED) == "true"
         nm.setInterruptionFilter(if (on) NotificationManager.INTERRUPTION_FILTER_PRIORITY else NotificationManager.INTERRUPTION_FILTER_ALL)

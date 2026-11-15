@@ -88,7 +88,7 @@ class ActionExecutor(
                 "Missing details: ${p.missing.joinToString { it.name }}.", FailureReason.INVALID_PARAMETERS, true,
             )
             is Preflight.NeedsCapabilities -> return ActionResult.Failed(
-                "VoicePilot needs ${p.missing.joinToString { it.displayName }} permission for this.",
+                "SL needs ${p.missing.joinToString { it.displayName }} permission for this.",
                 FailureReason.PERMISSION_MISSING,
                 recoverable = true,
             )

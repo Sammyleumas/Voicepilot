@@ -128,7 +128,7 @@ object BuiltInActions {
         ActionDefinition(
             id = ActionId.CREATE_REMINDER,
             title = "Reminder",
-            description = "Create a VoicePilot reminder notification at a local date-time (yyyy-MM-ddTHH:mm).",
+            description = "Create a SL reminder notification at a local date-time (yyyy-MM-ddTHH:mm).",
             params = listOf(
                 ParamSpec(Params.TEXT, ParamType.Text(200), true, "What to remind about", "What should I remind you about?"),
                 ParamSpec(Params.AT, ParamType.DateTime, true, "When, yyyy-MM-ddTHH:mm", "When should I remind you?"),
@@ -136,7 +136,7 @@ object BuiltInActions {
             risk = RiskLevel.LOW,
             outcome = OutcomeKind.COMPLETES,
             capabilities = setOf(Capability.POST_NOTIFICATIONS),
-            appLabel = "VoicePilot",
+            appLabel = "SL",
         ),
         ActionDefinition(
             id = ActionId.CREATE_CALENDAR_EVENT,
@@ -155,25 +155,25 @@ object BuiltInActions {
         ActionDefinition(
             id = ActionId.SAVE_NOTE,
             title = "Save note",
-            description = "Save a private note inside VoicePilot.",
+            description = "Save a private note inside SL.",
             params = listOf(
                 ParamSpec(Params.TEXT, ParamType.Text(2000), true, "Note content", "What should the note say?"),
             ),
             risk = RiskLevel.LOW,
             outcome = OutcomeKind.COMPLETES,
-            appLabel = "VoicePilot",
+            appLabel = "SL",
         ),
         ActionDefinition(
             id = ActionId.CREATE_TASK,
             title = "Create task",
-            description = "Add a task to the VoicePilot task list, optionally with a due date-time.",
+            description = "Add a task to the SL task list, optionally with a due date-time.",
             params = listOf(
                 ParamSpec(Params.TITLE, ParamType.Text(200), true, "Task", "What is the task?"),
                 ParamSpec(Params.DUE, ParamType.DateTime, false, "Due, yyyy-MM-ddTHH:mm"),
             ),
             risk = RiskLevel.LOW,
             outcome = OutcomeKind.COMPLETES,
-            appLabel = "VoicePilot",
+            appLabel = "SL",
         ),
         ActionDefinition(
             id = ActionId.PREPARE_WHATSAPP_MESSAGE,
@@ -182,8 +182,8 @@ object BuiltInActions {
             params = listOf(
                 ParamSpec(Params.RECIPIENT, ParamType.Text(80), true, "Who to message, as the user said it", "Who should I send it to?"),
                 ParamSpec(Params.MESSAGE, ParamType.Text(1000), true, "Message text written to the recipient", "What would you like me to tell {recipient}?"),
-                ParamSpec(Params.PHONE, ParamType.Phone, false, "Resolved phone number (set by VoicePilot)"),
-                ParamSpec(Params.RECIPIENT_NAME, ParamType.Text(120), false, "Resolved contact name (set by VoicePilot)"),
+                ParamSpec(Params.PHONE, ParamType.Phone, false, "Resolved phone number (set by SL)"),
+                ParamSpec(Params.RECIPIENT_NAME, ParamType.Text(120), false, "Resolved contact name (set by SL)"),
             ),
             risk = RiskLevel.MEDIUM,
             outcome = OutcomeKind.HANDS_OFF,
@@ -197,8 +197,8 @@ object BuiltInActions {
             params = listOf(
                 ParamSpec(Params.RECIPIENT, ParamType.Text(80), true, "Who to text, as the user said it", "Who should I send it to?"),
                 ParamSpec(Params.MESSAGE, ParamType.Text(1000), true, "Message text written to the recipient", "What would you like me to tell {recipient}?"),
-                ParamSpec(Params.PHONE, ParamType.Phone, false, "Resolved phone number (set by VoicePilot)"),
-                ParamSpec(Params.RECIPIENT_NAME, ParamType.Text(120), false, "Resolved contact name (set by VoicePilot)"),
+                ParamSpec(Params.PHONE, ParamType.Phone, false, "Resolved phone number (set by SL)"),
+                ParamSpec(Params.RECIPIENT_NAME, ParamType.Text(120), false, "Resolved contact name (set by SL)"),
             ),
             risk = RiskLevel.MEDIUM,
             outcome = OutcomeKind.HANDS_OFF,
@@ -223,8 +223,8 @@ object BuiltInActions {
             description = "Open the phone dialer with a contact's number. The user taps Call.",
             params = listOf(
                 ParamSpec(Params.RECIPIENT, ParamType.Text(80), true, "Who to call", "Who should I call?"),
-                ParamSpec(Params.PHONE, ParamType.Phone, false, "Resolved phone number (set by VoicePilot)"),
-                ParamSpec(Params.RECIPIENT_NAME, ParamType.Text(120), false, "Resolved contact name (set by VoicePilot)"),
+                ParamSpec(Params.PHONE, ParamType.Phone, false, "Resolved phone number (set by SL)"),
+                ParamSpec(Params.RECIPIENT_NAME, ParamType.Text(120), false, "Resolved contact name (set by SL)"),
             ),
             risk = RiskLevel.MEDIUM,
             outcome = OutcomeKind.HANDS_OFF,
@@ -336,7 +336,7 @@ object BuiltInActions {
             ),
             risk = RiskLevel.MEDIUM,
             outcome = OutcomeKind.COMPLETES,
-            appLabel = "VoicePilot",
+            appLabel = "SL",
         ),
     )
 }

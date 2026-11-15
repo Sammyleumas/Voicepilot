@@ -151,7 +151,7 @@ private fun AssistSheet(viewModel: AssistantViewModel, onDismiss: () -> Unit, on
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(statusLabel(state.status, state.voice), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                IconButton(onClick = onOpenApp) { Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = "Open VoicePilot") }
+                IconButton(onClick = onOpenApp) { Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = "Open SL") }
                 IconButton(onClick = { viewModel.cancel(); onDismiss() }) { Icon(Icons.Filled.Close, contentDescription = "Close") }
             }
             Text(

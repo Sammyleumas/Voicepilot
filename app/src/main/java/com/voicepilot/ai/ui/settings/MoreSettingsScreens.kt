@@ -57,7 +57,7 @@ fun IntegrationsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
         LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.screen)) {
             item {
                 Text(
-                    "Turn off anything you don't want VoicePilot to do. Disabled actions are refused even if the AI suggests them.",
+                    "Turn off anything you don't want SL to do. Disabled actions are refused even if the AI suggests them.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = Spacing.md),
@@ -137,7 +137,7 @@ fun NotificationAssistantScreen(viewModel: SettingsViewModel, onBack: () -> Unit
         LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.screen)) {
             item {
                 Text(
-                    "VoicePilot can summarise and announce notifications from apps you pick, and reply where the app offers a reply button. " +
+                    "SL can summarise and announce notifications from apps you pick, and reply where the app offers a reply button. " +
                         "Notifications stay in memory on this device and are never uploaded. It can't read full chat histories.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

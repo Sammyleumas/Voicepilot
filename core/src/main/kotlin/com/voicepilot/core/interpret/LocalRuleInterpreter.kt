@@ -132,7 +132,7 @@ class LocalRuleInterpreter(
         },
         Rule("^(?:buy|recharge|load|send)\\s+(?:me\\s+)?(?:n|₦)?\\d*\\s*(?:naira\\s+)?(?:worth of\\s+)?(?:airtime|credit|recharge card|card)(?:\\s+.*)?$") { _, _ ->
             Interpretation.Answer(
-                "Buying airtime goes through your bank's app or USSD code, and VoicePilot doesn't make payments for you. " +
+                "Buying airtime goes through your bank's app or USSD code, and SL doesn't make payments for you. " +
                     "Open your bank app, or say “dial star” followed by your bank's code and I'll put it in the dialer for you to check.",
                 InterpretationSource.LOCAL_RULES,
             )
@@ -434,7 +434,7 @@ class LocalRuleInterpreter(
         private val DATE_FMT = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.ENGLISH)
         private val CONJUNCTION = Regex("\\s*,?\\s+(?:and then|then|and also|and)\\s+|\\s*,\\s+then\\s+", RegexOption.IGNORE_CASE)
         private val LEADING_FILLER = Regex(
-            "^(?:hey\\s+voice\\s*pilot|ok(?:ay)?\\s+voice\\s*pilot|voice\\s*pilot|hey|ok(?:ay)?|please|kindly|abeg|" +
+            "^(?:hey\\s+voice\\s*pilot|ok(?:ay)?\\s+voice\\s*pilot|voice\\s*pilot|(?:hey|ok(?:ay)?)\\s+(?:s\\s*l|es+\\s+el+)|hey|ok(?:ay)?|please|kindly|abeg|" +
                 "can you|could you|would you|will you|i want you to|i'd like you to|i would like you to|help me(?: to)?|biko|pls|plz|make you|you fit|una fit|abeg make you)[,\\s]+",
             RegexOption.IGNORE_CASE,
         )

@@ -142,7 +142,7 @@ fun MemoryScreen(viewModel: LibraryViewModel, onBack: () -> Unit) {
         LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(Spacing.screen), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             item {
                 Text(
-                    "VoicePilot only remembers what you tell it to, such as “Remember that Samuel Okafor is my brother”. Message contents are never stored.",
+                    "SL only remembers what you tell it to, such as “Remember that Samuel Okafor is my brother”. Message contents are never stored.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

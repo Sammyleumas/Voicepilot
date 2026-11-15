@@ -90,13 +90,40 @@ interface WakeWordEngine {
  * Matches transcripts against the activation phrase, tolerating common
  * recognizer spellings ("hey voice pilot", "a voicepilot", "hey voice pirate").
  */
-class WakePhraseMatcher(phrase: String = "hey voicepilot") {
+class WakePhraseMatcher(phrase: String = "hey sl") {
     private val target = TextNormalizer.normalize(phrase).replace(" ", "")
     private val nameOnly = target.removePrefix("hey").removePrefix("ok")
+
+    /**
+     * Short names like "SL" are matched exactly against the ways a recognizer
+     * writes them ("sl", "s l", "es el", "ess ell"), each letter as its own word,
+     * because fuzzy matching on two letters would trigger on ordinary words.
+     */
+    private val shortName: String? = nameOnly.takeIf { it.length in 1..3 && it.all(Char::isLetter) }
+
+    /** Number of tokens the name occupies at [from], or 0 when it isn't there. */
+    private fun nameLength(tokens: List<String>, from: Int, name: String): Int {
+        if (tokens.getOrNull(from) == name) return 1
+        if (from + name.length > tokens.size) return 0
+        val spelled = name.indices.all { i -> tokens[from + i] in letterSpellings(name[i]) }
+        return if (spelled) name.length else 0
+    }
+
+    private fun matchShort(tokens: List<String>, name: String): WakeDetection? {
+        val hasPrefix = tokens.first() in WAKE_PREFIXES
+        val start = if (hasPrefix) 1 else 0
+        val len = nameLength(tokens, start, name)
+        if (len == 0) return null
+        val end = start + len
+        if (!hasPrefix && end >= tokens.size) return null // a bare name only counts when a command follows
+        val rest = tokens.drop(end).joinToString(" ").trim()
+        return WakeDetection(tokens.joinToString(" "), rest.ifEmpty { null })
+    }
 
     fun match(transcript: String): WakeDetection? {
         val tokens = TextNormalizer.tokens(transcript)
         if (tokens.isEmpty()) return null
+        shortName?.let { return matchShort(tokens, it)?.copy(transcript = transcript) }
         // Score windows of 1..4 tokens at the start of the transcript and keep the best one.
         val best = (1..minOf(4, tokens.size)).map { len ->
             val head = tokens.take(len).joinToString("")
@@ -120,5 +147,36 @@ class WakePhraseMatcher(phrase: String = "hey voicepilot") {
 
     private companion object {
         const val THRESHOLD = 0.8
+        val WAKE_PREFIXES = listOf("hey", "hei", "hay", "ok", "okay", "hi", "a")
+
+        fun letterSpellings(c: Char): List<String> = when (c) {
+            'a' -> listOf("a", "ay")
+            'b' -> listOf("b", "bee")
+            'c' -> listOf("c", "see", "sea")
+            'd' -> listOf("d", "dee")
+            'e' -> listOf("e")
+            'f' -> listOf("f", "ef", "eff")
+            'g' -> listOf("g", "gee")
+            'h' -> listOf("h", "aitch")
+            'i' -> listOf("i", "eye")
+            'j' -> listOf("j", "jay")
+            'k' -> listOf("k", "kay")
+            'l' -> listOf("l", "el", "ell")
+            'm' -> listOf("m", "em")
+            'n' -> listOf("n", "en")
+            'o' -> listOf("o", "oh")
+            'p' -> listOf("p", "pee")
+            'q' -> listOf("q", "queue")
+            'r' -> listOf("r", "are", "ar")
+            's' -> listOf("s", "es", "ess")
+            't' -> listOf("t", "tee", "tea")
+            'u' -> listOf("u", "you")
+            'v' -> listOf("v", "vee")
+            'w' -> listOf("w")
+            'x' -> listOf("x", "ex")
+            'y' -> listOf("y", "why")
+            'z' -> listOf("z", "zed", "zee")
+            else -> listOf(c.toString())
+        }
     }
 }

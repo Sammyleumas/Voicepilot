@@ -156,7 +156,7 @@ private fun ConfirmationCard(s: AssistantStatus.AwaitingConfirmation, onConfirm:
         if (s.plan.steps.any { it.definition.outcome == com.voicepilot.core.model.OutcomeKind.HANDS_OFF }) {
             Spacer(Modifier.height(Spacing.sm))
             Text(
-                "You'll complete the final step in the other app — VoicePilot won't send anything on its own.",
+                "You'll complete the final step in the other app — SL won't send anything on its own.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
