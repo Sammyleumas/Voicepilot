@@ -140,6 +140,13 @@ fun SettingsScreen(
                 )
                 SwitchRow("Spoken responses", "Read replies aloud", s.spokenResponses, { v -> viewModel.update { it.copy(spokenResponses = v) } }, Icons.AutoMirrored.Filled.VolumeUp)
                 SettingRow("Voice", s.voiceName ?: "System default", Icons.Filled.RecordVoiceOver, onClick = { viewModel.loadVoices(); dialog = SettingsDialog.VOICE })
+                SwitchRow(
+                    "Use the phone's speech popup",
+                    "Turn on if voice input says the recognizer is busy. VoicePilot also switches automatically when it has to.",
+                    s.useSystemSpeechDialog,
+                    { v -> viewModel.update { it.copy(useSystemSpeechDialog = v) } },
+                    Icons.Filled.Mic,
+                )
                 SettingRow("Speech speed", "${"%.1f".format(s.speechRate)}×", Icons.Filled.Speed, onClick = { dialog = SettingsDialog.SPEED })
                 SwitchRow(
                     "Hands-free mode",
@@ -202,7 +209,19 @@ fun SettingsScreen(
             SectionHeader("Automation")
             GroupCard {
                 SettingRow("Default messaging app", "${s.defaultMessagingApp.label} — used when you don't name an app", Icons.Filled.Phone, onClick = { dialog = SettingsDialog.MESSAGING })
-                SettingRow("Confirmation", s.confirmationMode.label, Icons.Filled.VerifiedUser, onClick = { dialog = SettingsDialog.CONFIRMATION })
+                SettingRow("Ask before running", s.confirmationMode.label, Icons.Filled.VerifiedUser, onClick = { dialog = SettingsDialog.CONFIRMATION })
+                SwitchRow(
+                    "Send replies without asking",
+                    if (s.confirmationMode == ConfirmationMode.NEVER) {
+                        "Replies to messages are sent as soon as you say them. Only turn on if you trust what VoicePilot hears."
+                    } else {
+                        "Available when “Ask before running” is set to Never ask."
+                    },
+                    s.sendWithoutAsking && s.confirmationMode == ConfirmationMode.NEVER,
+                    { v -> viewModel.update { it.copy(sendWithoutAsking = v) } },
+                    Icons.Filled.Security,
+                    enabled = s.confirmationMode == ConfirmationMode.NEVER,
+                )
                 SettingRow("Integrations", "${BuiltInActions.all.size - s.disabledActions.size} of ${BuiltInActions.all.size} actions enabled", Icons.Filled.Widgets, onClick = onOpenIntegrations)
                 SettingRow("Routines", "Multi-step workflows you start with a phrase", Icons.AutoMirrored.Filled.PlaylistPlay, onClick = onOpenRoutines)
                 SettingRow("Notification assistant", if (s.notificationAssistantEnabled) "On" else "Off", Icons.Filled.Notifications, onClick = onOpenNotifications)
@@ -313,7 +332,14 @@ private fun SettingsDialogs(
         SettingsDialog.CLOUD_TOKEN -> TextInputDialog("Access token", "", close, { v -> vm.setSecret(SecretStore.Secret.CLOUD_TOKEN, v); close() }, secret = true, maxLength = 4000)
         SettingsDialog.CONFIRMATION -> ChoiceDialog(
             "Ask before running", ConfirmationMode.entries, s.confirmationMode, { it.label }, close, { v -> vm.update { it.copy(confirmationMode = v) }; close() },
-            description = { if (it == ConfirmationMode.HIGH_ONLY) "High-risk actions always ask, whatever you choose." else null },
+            description = {
+                when (it) {
+                    ConfirmationMode.ALWAYS -> "Shows a preview of every action first."
+                    ConfirmationMode.MEDIUM_AND_HIGH -> "Recommended. Messages, calls and calendar events show a preview; simple actions run straight away."
+                    ConfirmationMode.HIGH_ONLY -> "Only actions that send something for you ask first."
+                    ConfirmationMode.NEVER -> "Everything runs as soon as you say it. Sending replies still asks unless you also turn on “Send replies without asking”."
+                }
+            },
         )
         SettingsDialog.MESSAGING -> ChoiceDialog(
             "Default messaging app", MessagingChannel.entries, s.defaultMessagingApp, { it.label }, close, { v -> vm.update { it.copy(defaultMessagingApp = v) }; close() },

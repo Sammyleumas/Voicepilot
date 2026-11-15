@@ -69,6 +69,7 @@ fun HomeScreen(
     val colors = LocalStatusColors.current
     val requestMic = rememberCapabilityRequester { granted -> if (granted) viewModel.startListening() }
     WakeListenerEffect(viewModel)
+    SystemSpeechFallback(viewModel)
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(

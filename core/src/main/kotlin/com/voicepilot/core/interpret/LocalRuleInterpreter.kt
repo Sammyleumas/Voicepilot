@@ -85,6 +85,20 @@ class LocalRuleInterpreter(
             Interpretation.Answer(HELP_TEXT, InterpretationSource.LOCAL_RULES)
         },
 
+        Rule("^(?:hi|hello|hey|hey there|good (?:morning|afternoon|evening)|how are you(?: doing)?|how you doing|how're you|how you dey|how far|how body|wetin dey|you dey|are you there|what's up|whats up|sup)$") { m, _ ->
+            val greeting = m.value.lowercase()
+            val text = when {
+                greeting.startsWith("good ") -> "${greeting.replaceFirstChar { it.uppercaseChar() }}! What can I do for you?"
+                greeting.contains("dey") || greeting.contains("far") || greeting.contains("body") -> "I dey kampe! Wetin you want make I do?"
+                greeting.startsWith("how") -> "I'm doing great, thanks for asking. What can I do for you?"
+                greeting.contains("there") -> "I'm here. What would you like to do?"
+                else -> "Hello! What can I do for you?"
+            }
+            Interpretation.Answer(text, InterpretationSource.LOCAL_RULES)
+        },
+        Rule("^(?:thank you|thanks|thank you so much|thanks a lot|nice one|well done|good job|e se|daalu|na gode|i hail)(?: voicepilot)?$") { _, _ ->
+            Interpretation.Answer("You're welcome!", InterpretationSource.LOCAL_RULES)
+        },
         Rule("^(?:wetin be the time|what time e be|what time (?:is it )?now|time now|which time (?:be this|e be)?)$") { _, _ ->
             Interpretation.Answer("It's ${clock.localNow().format(TIME_FMT)}.", InterpretationSource.LOCAL_RULES)
         },

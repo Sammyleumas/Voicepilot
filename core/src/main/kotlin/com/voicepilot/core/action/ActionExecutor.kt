@@ -72,7 +72,7 @@ class ActionExecutor(
         }
         val missingCaps = definition.requiredCapabilities(validated).filterNot(capabilities::isGranted).toSet()
         if (missingCaps.isNotEmpty()) return Preflight.NeedsCapabilities(validated, definition, missingCaps)
-        val confirm = ConfirmationPolicy.requiresConfirmation(definition.risk, current.confirmationMode)
+        val confirm = ConfirmationPolicy.requiresConfirmation(definition.risk, current)
         return Preflight.Ready(validated, definition, confirm)
     }
 

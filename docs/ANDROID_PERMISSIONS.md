@@ -17,6 +17,10 @@ VoicePilot asks for each permission only when a feature needs it, after explaini
 
 No `QUERY_ALL_PACKAGES`: installed apps are discovered through a `<queries>` launcher intent, plus explicit WhatsApp packages.
 
+## Speech recognition on different phones
+
+VoicePilot uses the phone's default speech recognizer. If it reports “busy” (common when another app holds the microphone, or on some Tecno/Infinix/itel builds), VoicePilot retries twice and then opens the phone's own speech popup (`RecognizerIntent`) instead. Settings › Voice › *Use the phone's speech popup* makes the popup the default.
+
 ## Things Android does not allow (and how VoicePilot handles them)
 
 - **Toggling Wi‑Fi, Bluetooth, mobile data, airplane mode** directly: since Android 10, ordinary apps can't. VoicePilot opens the matching settings panel and says so.

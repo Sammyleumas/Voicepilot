@@ -126,6 +126,7 @@ private fun AssistSheet(viewModel: AssistantViewModel, onDismiss: () -> Unit, on
     var input by rememberSaveable { mutableStateOf("") }
     val requestMic = rememberCapabilityRequester { granted -> if (granted) viewModel.startListening() }
     WakeListenerEffect(viewModel)
+    com.voicepilot.ai.ui.assistant.SystemSpeechFallback(viewModel)
     LaunchedEffect(state.voice.needsMicPermission) {
         if (state.voice.needsMicPermission) requestMic(setOf(Capability.MICROPHONE))
     }

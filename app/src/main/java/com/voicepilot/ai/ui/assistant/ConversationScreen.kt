@@ -59,6 +59,7 @@ fun ConversationScreen(viewModel: AssistantViewModel, onBack: () -> Unit) {
     val listState = rememberLazyListState()
     val requestMic = rememberCapabilityRequester { granted -> if (granted) viewModel.startListening() }
     WakeListenerEffect(viewModel)
+    SystemSpeechFallback(viewModel)
 
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) listState.animateScrollToItem(state.messages.size - 1)

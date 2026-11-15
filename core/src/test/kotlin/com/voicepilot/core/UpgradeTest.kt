@@ -186,4 +186,41 @@ class UpgradeTest {
         assertEquals(ActionId.OPEN_APP, single("open Spotify").action)
         assertIs<Interpretation.Actions>(interpreter.interpretText("I'm going to sleep"))
     }
+
+    // ------------------------------------------------------------ approvals and small talk
+
+    @Test
+    fun `never ask mode runs messages without approval but replies still ask`() = runTest {
+        val env = TestEnv()
+        env.settings = env.settings.copy(confirmationMode = com.voicepilot.core.settings.ConfirmationMode.NEVER)
+        val wa = env.session.submit("send Ada a WhatsApp message saying I'm outside")
+        assertIs<AssistantStatus.Success>(wa.status, "Medium risk runs straight away in never-ask mode")
+        assertEquals(ActionId.PREPARE_WHATSAPP_MESSAGE, env.handlers.executed.single().action)
+
+        val reply = env.session.submit("reply saying ok")
+        assertIs<AssistantStatus.AwaitingConfirmation>(reply.status, "Sending still asks unless separately allowed")
+        env.session.submit("no")
+
+        env.settings = env.settings.copy(sendWithoutAsking = true)
+        assertIs<AssistantStatus.Success>(env.session.submit("reply saying ok").status)
+        assertEquals(ActionId.REPLY_TO_MESSAGE, env.handlers.executed.last().action)
+    }
+
+    @Test
+    fun `send without asking has no effect outside never-ask mode`() {
+        val p = com.voicepilot.core.settings.ConfirmationPolicy
+        assertTrue(p.requiresConfirmation(RiskLevel.HIGH, com.voicepilot.core.settings.ConfirmationMode.MEDIUM_AND_HIGH, sendWithoutAsking = true))
+        assertTrue(p.requiresConfirmation(RiskLevel.HIGH, com.voicepilot.core.settings.ConfirmationMode.NEVER, sendWithoutAsking = false))
+        kotlin.test.assertFalse(p.requiresConfirmation(RiskLevel.HIGH, com.voicepilot.core.settings.ConfirmationMode.NEVER, sendWithoutAsking = true))
+        kotlin.test.assertFalse(p.requiresConfirmation(RiskLevel.MEDIUM, com.voicepilot.core.settings.ConfirmationMode.NEVER))
+    }
+
+    @Test
+    fun `small talk is answered on the phone`() {
+        listOf("how you doing", "how are you", "hello", "good evening", "how far", "thank you").forEach {
+            assertIs<Interpretation.Answer>(interpreter.interpretText(it), it)
+        }
+        assertEquals("I dey kampe! Wetin you want make I do?", (interpreter.interpretText("how you dey") as Interpretation.Answer).text)
+        assertEquals(ActionId.SET_FLASHLIGHT, single("off flash light").action)
+    }
 }

@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -78,18 +80,59 @@ class AndroidSpeechRecognitionEngine @Inject constructor(
     override fun supportsOffline(): Boolean =
         Build.VERSION.SDK_INT >= 31 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
 
-    override fun listen(config: RecognitionConfig): Flow<SpeechEvent> = callbackFlow {
+    /** When the last recognizer was released; some recognizers report "busy" if a new one starts too soon. */
+    @Volatile private var lastReleasedAt = 0L
+
+    /**
+     * Listens once, retrying automatically when the device recognizer reports
+     * it is busy or disconnected before any speech was heard.
+     */
+    override fun listen(config: RecognitionConfig): Flow<SpeechEvent> = flow {
+        var attempt = 0
+        while (true) {
+            var retry = false
+            var heardSpeech = false
+            attemptOnce(config).collect { event ->
+                val transient = event is SpeechEvent.Error &&
+                    (event.error == SpeechError.BUSY || event.error == SpeechError.CLIENT || event.error == SpeechError.NETWORK)
+                if (transient && !heardSpeech && attempt < MAX_RETRIES) {
+                    retry = true
+                } else {
+                    if (event is SpeechEvent.SpeechStarted || event is SpeechEvent.Partial) heardSpeech = true
+                    emit(event)
+                }
+            }
+            if (!retry) break
+            attempt++
+            delay(RETRY_DELAY_MS * attempt)
+        }
+    }.flowOn(Dispatchers.Main.immediate)
+
+    /**
+     * Uses the phone's default recognizer, which is what works on most devices
+     * (Tecno, Infinix and Samsung included). Only when VoicePilot itself is the
+     * default (as the assistant) does it pick another installed recognizer, so it
+     * never ends up talking to itself.
+     */
+    private fun createRecognizer(): SpeechRecognizer {
+        val default = android.provider.Settings.Secure.getString(context.contentResolver, "voice_recognition_service")
+        val defaultIsSelf = default?.startsWith(context.packageName + "/") == true
+        if (!defaultIsSelf && SpeechRecognizer.isRecognitionAvailable(context)) {
+            return SpeechRecognizer.createSpeechRecognizer(context)
+        }
+        val other = RecognizerComponents.systemRecognizer(context)
+        return if (other != null) SpeechRecognizer.createSpeechRecognizer(context, other) else SpeechRecognizer.createSpeechRecognizer(context)
+    }
+
+    private fun attemptOnce(config: RecognitionConfig): Flow<SpeechEvent> = callbackFlow {
         if (!isAvailable()) {
             trySend(SpeechEvent.Error(SpeechError.UNAVAILABLE))
             close()
             return@callbackFlow
         }
-        val component = RecognizerComponents.systemRecognizer(context)
-        val recognizer = if (component != null) {
-            SpeechRecognizer.createSpeechRecognizer(context, component)
-        } else {
-            SpeechRecognizer.createSpeechRecognizer(context)
-        }
+        val sinceRelease = System.currentTimeMillis() - lastReleasedAt
+        if (sinceRelease < COOLDOWN_MS) delay(COOLDOWN_MS - sinceRelease)
+        val recognizer = createRecognizer()
         recognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) { trySend(SpeechEvent.ReadyForSpeech) }
             override fun onBeginningOfSpeech() { trySend(SpeechEvent.SpeechStarted) }
@@ -129,10 +172,17 @@ class AndroidSpeechRecognitionEngine @Inject constructor(
         recognizer.startListening(intent)
         awaitClose {
             // Always release the microphone when the collector goes away.
-            recognizer.cancel()
-            recognizer.destroy()
+            runCatching { recognizer.cancel() }
+            runCatching { recognizer.destroy() }
+            lastReleasedAt = System.currentTimeMillis()
         }
-    }.flowOn(Dispatchers.Main.immediate)
+    }
+
+    private companion object {
+        const val MAX_RETRIES = 2
+        const val RETRY_DELAY_MS = 400L
+        const val COOLDOWN_MS = 350L
+    }
 }
 
 /** Spoken responses through the platform TextToSpeech engine. */

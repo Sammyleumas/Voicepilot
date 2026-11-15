@@ -41,6 +41,8 @@ data class VoiceState(
     val level: Float = 0f,
     val error: String? = null,
     val needsMicPermission: Boolean = false,
+    /** Incremented to ask the screen to open the phone's own speech popup. */
+    val systemDialogRequest: Int = 0,
 )
 
 data class AssistantUiState(
@@ -124,9 +126,16 @@ class AssistantViewModel @Inject constructor(
         }
     }
 
+    private var dialogRequests = 0
+
     fun startListening() {
         if (!capabilities.isGranted(Capability.MICROPHONE)) {
             voice.value = VoiceState(needsMicPermission = true, error = SpeechError.PERMISSION_DENIED.userMessage)
+            return
+        }
+        if (settingsRepo.current.useSystemSpeechDialog) {
+            synthesizer.stop()
+            voice.value = VoiceState(systemDialogRequest = ++dialogRequests)
             return
         }
         synthesizer.stop()
@@ -141,10 +150,15 @@ class AssistantViewModel @Inject constructor(
                         is SpeechEvent.Level -> voice.update { it.copy(level = event.value) }
                         is SpeechEvent.Partial -> voice.update { it.copy(partial = event.text) }
                         is SpeechEvent.Final -> finalText = event.text
-                        is SpeechEvent.Error -> voice.value = VoiceState(
-                            error = event.error.userMessage,
-                            needsMicPermission = event.error == SpeechError.PERMISSION_DENIED,
-                        )
+                        is SpeechEvent.Error -> voice.value = if (event.error in FALLBACK_ERRORS) {
+                            // The in-app recognizer can't run on this phone right now: use the phone's own speech popup.
+                            VoiceState(systemDialogRequest = ++dialogRequests)
+                        } else {
+                            VoiceState(
+                                error = event.error.userMessage,
+                                needsMicPermission = event.error == SpeechError.PERMISSION_DENIED,
+                            )
+                        }
                         else -> Unit
                     }
                 }
@@ -157,6 +171,16 @@ class AssistantViewModel @Inject constructor(
                 submit(it, fromVoice = true)
             }
         }
+    }
+
+    /** Result from the phone's speech popup (null when cancelled). */
+    fun onSystemDialogResult(text: String?) {
+        voice.value = VoiceState()
+        if (!text.isNullOrBlank()) submit(text, fromVoice = true)
+    }
+
+    fun onSystemDialogUnavailable() {
+        voice.value = VoiceState(error = "Voice input isn't available on this phone. Please type your request, or install Google's speech services.")
     }
 
     fun stopListening() {
@@ -238,6 +262,7 @@ class AssistantViewModel @Inject constructor(
     }
 
     private companion object {
+        val FALLBACK_ERRORS = setOf(SpeechError.BUSY, SpeechError.CLIENT, SpeechError.UNAVAILABLE, SpeechError.LANGUAGE_UNAVAILABLE)
         const val RECENT_LIMIT = 5
     }
 }

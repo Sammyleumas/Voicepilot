@@ -9,11 +9,13 @@
 
 ## Risk classification and confirmation
 
-| Risk | Examples | Default (Messages & sensitive actions) | “Every action” | “High only” |
-|---|---|---|---|---|
-| Low | open app/settings, alarms, timers, notes, flashlight, volume | runs | asks | runs |
-| Medium | WhatsApp message, call, calendar event, DND, remembering a nickname | asks | asks | runs |
-| High | sending external communications, deleting data, payments, sharing personal data | **always asks** | asks | asks |
+| Risk | Examples | Default (Messages & sensitive actions) | “Every action” | “High only” | “Never ask” |
+|---|---|---|---|---|---|
+| Low | open app/settings, alarms, timers, notes, flashlight, volume, music, maps | runs | asks | runs | runs |
+| Medium | WhatsApp/SMS message (you still tap Send), call, calendar event, DND, USSD code | asks | asks | runs | runs |
+| High | replying to a message (sends immediately) | asks | asks | asks | asks, unless **Send replies without asking** is also on |
+
+Payments are never automated in any mode.
 
 No high-risk action is currently implemented as automatic; notification replies are sent only after the user types the reply and taps **Send**. Payments, file deletion and lock-screen bypass are explicitly out of scope and the AI prompt marks them unsupported.
 

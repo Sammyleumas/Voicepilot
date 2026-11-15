@@ -77,6 +77,8 @@ class SettingsRepository @Inject constructor(
             notificationAllowedPackages = p[K.NOTIF_PACKAGES] ?: d.notificationAllowedPackages,
             defaultCountryCode = p[K.COUNTRY_CODE] ?: d.defaultCountryCode,
             defaultMessagingApp = enumOr(p[K.MESSAGING_APP], d.defaultMessagingApp),
+            sendWithoutAsking = p[K.SEND_WITHOUT_ASKING] ?: d.sendWithoutAsking,
+            useSystemSpeechDialog = p[K.SYSTEM_SPEECH] ?: d.useSystemSpeechDialog,
             onboardingComplete = p[K.ONBOARDED] ?: d.onboardingComplete,
         )
     }
@@ -107,6 +109,8 @@ class SettingsRepository @Inject constructor(
         p[K.COUNTRY_CODE] = s.defaultCountryCode.filter { it.isDigit() }.take(4)
         p[K.ONBOARDED] = s.onboardingComplete
         p[K.MESSAGING_APP] = s.defaultMessagingApp.name
+        p[K.SEND_WITHOUT_ASKING] = s.sendWithoutAsking
+        p[K.SYSTEM_SPEECH] = s.useSystemSpeechDialog
     }
 
     private inline fun <reified E : Enum<E>> enumOr(value: String?, default: E): E =
@@ -137,5 +141,7 @@ class SettingsRepository @Inject constructor(
         val COUNTRY_CODE = stringPreferencesKey("country_code")
         val ONBOARDED = booleanPreferencesKey("onboarding_complete")
         val MESSAGING_APP = stringPreferencesKey("default_messaging_app")
+        val SEND_WITHOUT_ASKING = booleanPreferencesKey("send_without_asking")
+        val SYSTEM_SPEECH = booleanPreferencesKey("use_system_speech_dialog")
     }
 }

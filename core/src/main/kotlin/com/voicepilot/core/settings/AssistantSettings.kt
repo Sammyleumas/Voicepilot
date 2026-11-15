@@ -8,6 +8,7 @@ enum class ConfirmationMode(val label: String) {
     ALWAYS("Every action"),
     MEDIUM_AND_HIGH("Messages, events and other sensitive actions"),
     HIGH_ONLY("Only high-risk actions"),
+    NEVER("Never ask — run right away"),
 }
 
 enum class AiProviderType(val label: String) {
@@ -55,6 +56,10 @@ data class AssistantSettings(
     /** Calling code used to complete local numbers, e.g. 234 for Nigeria. */
     val defaultCountryCode: String = "234",
     val defaultMessagingApp: MessagingChannel = MessagingChannel.WHATSAPP,
+    /** Lets high-risk actions (sending replies) run without asking. Off by default. */
+    val sendWithoutAsking: Boolean = false,
+    /** Use the phone's own speech popup instead of in-app listening. */
+    val useSystemSpeechDialog: Boolean = false,
     val onboardingComplete: Boolean = false,
 ) {
     companion object {
@@ -63,10 +68,18 @@ data class AssistantSettings(
     }
 }
 
+/**
+ * Decides whether an action needs the user's approval first. High-risk actions
+ * (anything that sends on your behalf) always ask unless the user separately
+ * turned on [AssistantSettings.sendWithoutAsking].
+ */
 object ConfirmationPolicy {
-    fun requiresConfirmation(risk: RiskLevel, mode: ConfirmationMode): Boolean = when (risk) {
-        RiskLevel.HIGH -> true
-        RiskLevel.MEDIUM -> mode != ConfirmationMode.HIGH_ONLY
+    fun requiresConfirmation(risk: RiskLevel, mode: ConfirmationMode, sendWithoutAsking: Boolean = false): Boolean = when (risk) {
+        RiskLevel.HIGH -> !(sendWithoutAsking && mode == ConfirmationMode.NEVER)
+        RiskLevel.MEDIUM -> mode == ConfirmationMode.ALWAYS || mode == ConfirmationMode.MEDIUM_AND_HIGH
         RiskLevel.LOW -> mode == ConfirmationMode.ALWAYS
     }
+
+    fun requiresConfirmation(risk: RiskLevel, settings: AssistantSettings): Boolean =
+        requiresConfirmation(risk, settings.confirmationMode, settings.sendWithoutAsking)
 }
