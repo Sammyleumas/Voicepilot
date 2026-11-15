@@ -30,7 +30,13 @@ enum class ActionId(val wireName: String) {
     DIAL_CONTACT("dial_contact"),
     SET_DO_NOT_DISTURB("set_do_not_disturb"),
     WEB_SEARCH("web_search"),
-    REMEMBER_ALIAS("remember_alias");
+    REMEMBER_ALIAS("remember_alias"),
+    READ_MESSAGES("read_messages"),
+    REPLY_TO_MESSAGE("reply_to_message"),
+    PLAY_MEDIA("play_media"),
+    MEDIA_CONTROL("media_control"),
+    NAVIGATE("navigate"),
+    DIAL_USSD("dial_ussd");
 
     companion object {
         private val byWire = entries.associateBy { it.wireName }

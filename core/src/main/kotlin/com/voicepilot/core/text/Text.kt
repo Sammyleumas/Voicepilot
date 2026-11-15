@@ -85,10 +85,12 @@ object YesNoParser {
         "yes", "yeah", "yep", "yup", "sure", "ok", "okay", "go ahead", "do it", "send it", "send", "confirm",
         "confirmed", "correct", "that's right", "thats right", "please do", "proceed", "continue", "right",
         "of course", "absolutely", "yes please", "go on", "sounds good",
+        "yes o", "ehen", "ehn", "na so", "oya", "do am", "send am", "carry go", "ok o", "sure o", "yes abeg", "go ahead o",
     )
     private val NO = setOf(
         "no", "nope", "nah", "cancel", "stop", "don't", "dont", "do not", "never mind", "nevermind",
         "abort", "wrong", "not now", "no thanks", "forget it",
+        "no o", "abeg no", "leave am", "leave it", "forget am", "no be dat", "no be that", "cancel am", "stop am", "no need",
     )
 
     fun parse(input: String): YesNo {
@@ -99,7 +101,7 @@ object YesNoParser {
         val words = n.split(' ')
         if (words.size <= 4) {
             if (words.first() in setOf("no", "nope", "cancel", "stop", "don't", "dont")) return YesNo.NO
-            if (words.first() in setOf("yes", "yeah", "yep", "sure", "ok", "okay")) return YesNo.YES
+            if (words.first() in setOf("yes", "yeah", "yep", "sure", "ok", "okay", "oya", "ehen")) return YesNo.YES
         }
         return YesNo.UNKNOWN
     }

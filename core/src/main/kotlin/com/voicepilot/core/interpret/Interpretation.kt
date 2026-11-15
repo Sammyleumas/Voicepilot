@@ -48,8 +48,8 @@ interface CommandInterpreter {
  */
 object MessageRewriter {
     private val LEADING = Regex(
-        "^(?:(?:and\\s+)?(?:tell|telling|saying|say|ask|asking|that|to say|to tell (?:him|her|them))\\s+)?" +
-            "(?:(?:him|her|them)\\s+)?(?:that\\s+)?",
+        "^(?:(?:and\\s+)?(?:tell|telling|saying|say|sey|ask|asking|that|to say|to tell (?:him|her|them|am))\\s+)?" +
+            "(?:(?:him|her|them|am)\\s+)?(?:(?:that|say|sey)\\s+)?",
         RegexOption.IGNORE_CASE,
     )
     private val HER_OBJECT = Regex(
@@ -67,6 +67,8 @@ object MessageRewriter {
                 .replace(Regex("\\bhis\\b", RegexOption.IGNORE_CASE), "your")
                 .replace(Regex("\\bthem\\b", RegexOption.IGNORE_CASE), "you")
                 .replace(HER_OBJECT, "you")
+                // Pidgin "am" (him/her), but not English "I am".
+                .replace(Regex("(?<!\\bI )\\bam\\b(?!\\s+(?:a|an|the|not|going|coming|here|there|on|in|at|fine|ok|okay|late|outside|home)\\b)", RegexOption.IGNORE_CASE), "you")
         }
         text = text.replace(Regex("\\s+"), " ").trim().trimEnd(',')
         return text.replaceFirstChar { it.uppercaseChar() }

@@ -142,8 +142,27 @@ object ActionDescriber {
             ActionId.DIAL_CONTACT -> "Open the dialer to call ${p[Params.RECIPIENT_NAME] ?: p[Params.RECIPIENT] ?: "a contact"}"
             ActionId.SET_DO_NOT_DISTURB -> if (p[Params.ENABLED] == "false") "Turn off Do Not Disturb" else "Turn on Do Not Disturb"
             ActionId.WEB_SEARCH -> "Search the web for “${p[Params.QUERY] ?: ""}”"
+            ActionId.READ_MESSAGES -> "Read your new " + (p[Params.APP]?.let { "$it " } ?: "") + "messages" +
+                (p[Params.SENDER]?.let { " from $it" } ?: "")
+            ActionId.REPLY_TO_MESSAGE -> "Reply to ${p[Params.SENDER] ?: "the latest message"}" +
+                (p[Params.APP]?.let { " on $it" } ?: "") + (p[Params.MESSAGE]?.let { ": “$it”" } ?: "")
+            ActionId.PLAY_MEDIA -> "Play “${p[Params.QUERY] ?: ""}”" + (p[Params.APP]?.let { " on ${appTitle(it)}" } ?: "")
+            ActionId.MEDIA_CONTROL -> when (p[Params.COMMAND]) {
+                "pause" -> "Pause playback"
+                "next" -> "Skip to the next track"
+                "previous" -> "Go back to the previous track"
+                else -> "Resume playback"
+            }
+            ActionId.NAVIGATE -> "Start directions to ${p[Params.DESTINATION] ?: "your destination"}" +
+                (p[Params.MODE]?.takeIf { it != "driving" }?.let { " ($it)" } ?: "")
+            ActionId.DIAL_USSD -> "Open the dialer with ${p[Params.CODE] ?: "a USSD code"}" +
+                ((p[Params.LABEL] ?: p[Params.CODE]?.let { com.voicepilot.core.messaging.UssdCodes.KNOWN[it] })?.let { " ($it)" } ?: "")
             ActionId.REMEMBER_ALIAS -> "Remember that “${p[Params.ALIAS] ?: ""}” means ${p[Params.CONTACT] ?: "a contact"}"
         }.trim()
+    }
+
+    fun appTitle(app: String): String = app.split(' ').joinToString(" ") { w ->
+        if (w.equals("youtube", true)) "YouTube" else w.replaceFirstChar { it.uppercaseChar() }
     }
 
     fun pageName(page: String): String = when (page) {

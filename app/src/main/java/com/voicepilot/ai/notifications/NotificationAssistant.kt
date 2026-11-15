@@ -11,7 +11,10 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.voicepilot.ai.data.SettingsRepository
 import com.voicepilot.ai.di.ApplicationScope
+import com.voicepilot.core.messaging.MessageInbox
+import com.voicepilot.core.messaging.ReplyTarget
 import com.voicepilot.core.notifications.NotificationFilter
+import com.voicepilot.core.text.NameMatcher
 import com.voicepilot.core.notifications.NotificationItem
 import com.voicepilot.core.notifications.NotificationSummarizer
 import com.voicepilot.core.voice.SpeechSynthesizer
@@ -31,7 +34,7 @@ import javax.inject.Singleton
  * written to disk or sent over the network. Cleared when the process ends.
  */
 @Singleton
-class NotificationHub @Inject constructor(@ApplicationContext private val context: Context) {
+class NotificationHub @Inject constructor(@ApplicationContext private val context: Context) : MessageInbox {
 
     private class Entry(val item: NotificationItem, val reply: Notification.Action?, val contentIntent: PendingIntent?)
 
@@ -67,6 +70,46 @@ class NotificationHub @Inject constructor(@ApplicationContext private val contex
     }
 
     fun summary(): String = NotificationSummarizer.summarize(items.value)
+
+    @Volatile private var lastReadKey: String? = null
+
+    /** Messages matching the filters, newest last, and remembers the newest one for "reply". */
+    @Synchronized
+    fun read(app: String?, sender: String?): List<NotificationItem> {
+        val found = entries.values.map { it.item }
+            .filter { it.isMessaging || it.canReply }
+            .filter { app == null || it.appLabel.contains(app, ignoreCase = true) }
+            .filter { sender == null || matches(it, sender) }
+            .sortedBy { it.postedAtMillis }
+        found.lastOrNull()?.let { lastReadKey = it.key }
+        return found
+    }
+
+    /** The conversation a reply goes to: named sender, else the last message read, else the newest repliable one. */
+    @Synchronized
+    override fun replyTarget(sender: String?, app: String?): ReplyTarget? = findReplyEntry(sender, app)?.let {
+        ReplyTarget(it.item.conversationTitle ?: it.item.title, it.item.appLabel)
+    }
+
+    /** Sends [text] to the conversation chosen by [replyTarget]. */
+    @Synchronized
+    fun replyTo(sender: String?, app: String?, text: String): Boolean {
+        val entry = findReplyEntry(sender, app) ?: return false
+        return reply(entry.item.key, text)
+    }
+
+    private fun findReplyEntry(sender: String?, app: String?): Entry? {
+        val candidates = entries.values
+            .filter { it.reply != null }
+            .filter { app == null || it.item.appLabel.contains(app, ignoreCase = true) }
+        if (sender != null) return candidates.filter { matches(it.item, sender) }.maxByOrNull { it.item.postedAtMillis }
+        return candidates.firstOrNull { it.item.key == lastReadKey } ?: candidates.maxByOrNull { it.item.postedAtMillis }
+    }
+
+    private fun matches(item: NotificationItem, sender: String): Boolean {
+        val who = item.conversationTitle ?: item.title
+        return NameMatcher.score(sender, who) >= 0.75 || who.contains(sender, ignoreCase = true)
+    }
 
     /** Sends [text] through the notification's own reply action. Returns false if unsupported. */
     @Synchronized

@@ -37,6 +37,10 @@ Run on Android 10, 12 and 14/15, including at least one Samsung and one Tecno/In
 | 4 | “Send Samuel a WhatsApp message saying I'm on my way” with two Samuels | Choice list with masked numbers; nothing opens before a choice and approval |
 | 5 | Same with one Samuel | Confirmation card → WhatsApp opens with text prefilled; app says “Tap Send” |
 | 5b | “Message Ada by SMS saying hi”, “Message Tunde on Telegram saying hi” | SMS app opens with number and text; Telegram opens its chat picker with the text |
+| 5c | Enable notification assistant for WhatsApp; get a message; say “Read my messages”, then “Reply saying I'm coming” → Go ahead | Message read aloud; confirmation names the sender; reply appears in WhatsApp |
+| 5d | “Play Burna Boy on Spotify”, “Pause”, “Next song” | Spotify plays; controls work |
+| 5e | “Take me to Ikeja City Mall”, “Check my airtime balance” | Maps starts directions; dialer shows *310# without calling |
+| 5f | Pidgin: “Abeg send Tunde message say I dey come”, then “oya” | Same as the English flow |
 | 6 | Contacts permission denied | Permission card; Retry after granting continues the same request |
 | 7 | Airplane mode, AI provider = Gemini | Local commands work; unknown request explains no connection |
 | 8 | Wrong Gemini key | “rejected the credentials” message |

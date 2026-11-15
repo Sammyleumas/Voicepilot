@@ -3,6 +3,7 @@ package com.voicepilot.core.interpret
 import com.voicepilot.core.action.Params
 import com.voicepilot.core.model.ActionId
 import com.voicepilot.core.model.ActionRequest
+import com.voicepilot.core.messaging.UssdCodes
 import com.voicepilot.core.settings.MessagingChannel
 import com.voicepilot.core.text.NumberWords
 import com.voicepilot.core.time.Clock
@@ -84,8 +85,15 @@ class LocalRuleInterpreter(
             Interpretation.Answer(HELP_TEXT, InterpretationSource.LOCAL_RULES)
         },
 
+        Rule("^(?:wetin be the time|what time e be|what time (?:is it )?now|time now|which time (?:be this|e be)?)$") { _, _ ->
+            Interpretation.Answer("It's ${clock.localNow().format(TIME_FMT)}.", InterpretationSource.LOCAL_RULES)
+        },
+        Rule("^(?:wetin|what) (?:you fit do|you sabi do|you sabi|can you help me with)$") { _, _ ->
+            Interpretation.Answer(HELP_TEXT, InterpretationSource.LOCAL_RULES)
+        },
+
         // Sleep: suggest Do Not Disturb + alarm, then ask for the wake-up time.
-        Rule("^(?:i'?m|i am) (?:going to (?:sleep|bed)|off to bed|heading to bed|about to sleep)$|^good ?night$|^bed ?time$") { _, _ ->
+        Rule("^(?:i'?m|i am) (?:going to (?:sleep|bed)|off to bed|heading to bed|about to sleep)$|^good ?night$|^bed ?time$|^i (?:wan|want to|dey) (?:go )?sleep$|^make i (?:go )?sleep$|^i don tire$") { _, _ ->
             actions(
                 "prepare_sleep",
                 request(ActionId.SET_DO_NOT_DISTURB, Params.ENABLED to "true"),
@@ -98,20 +106,83 @@ class LocalRuleInterpreter(
             )
         },
 
+        // Airtime and data (USSD codes go to the dialer; the user taps Call)
+        Rule("^(?:check|what is|what's|wetin be|how much is|show)\\s+(?:my\\s+)?(?:airtime|credit|call credit|account)(?:\\s+(?:balance|bal))?(?: remain)?$|^how much (?:airtime|credit) (?:i get|do i have|remain|i have)$|^(?:my )?airtime balance$|^check (?:my )?balance$") { _, _ ->
+            actions("check_airtime", request(ActionId.DIAL_USSD, Params.CODE to UssdCodes.AIRTIME_BALANCE, Params.LABEL to "airtime balance"))
+        },
+        Rule("^(?:check|what is|what's|wetin be|how much is|show)\\s+(?:my\\s+)?data(?:\\s+(?:balance|bal))?(?: remain)?$|^how much data (?:i get|do i have|remain|i have|is left)$|^(?:my )?data balance$") { _, _ ->
+            actions("check_data", request(ActionId.DIAL_USSD, Params.CODE to UssdCodes.DATA_BALANCE, Params.LABEL to "data balance"))
+        },
+        Rule("^(?:buy|subscribe(?: to)?|get|renew)\\s+(?:a\\s+|some\\s+|my\\s+)?data(?:\\s+(?:plan|bundle|subscription|sub))?$") { _, _ ->
+            actions("buy_data", request(ActionId.DIAL_USSD, Params.CODE to UssdCodes.DATA_PLANS, Params.LABEL to "data plans"))
+        },
+        Rule("^(?:buy|recharge|load|send)\\s+(?:me\\s+)?(?:n|₦)?\\d*\\s*(?:naira\\s+)?(?:worth of\\s+)?(?:airtime|credit|recharge card|card)(?:\\s+.*)?$") { _, _ ->
+            Interpretation.Answer(
+                "Buying airtime goes through your bank's app or USSD code, and VoicePilot doesn't make payments for you. " +
+                    "Open your bank app, or say “dial star” followed by your bank's code and I'll put it in the dialer for you to check.",
+                InterpretationSource.LOCAL_RULES,
+            )
+        },
+        Rule("^(?:dial|run|call|enter)\\s+(?<c>(?:star|\\*|hash|#|asterisk)\\b?.*)$") { m, _ ->
+            val code = UssdCodes.fromSpeech(m.g("c")!!) ?: return@Rule null
+            actions("dial_ussd", request(ActionId.DIAL_USSD, Params.CODE to code))
+        },
+
+        // Received messages: read and reply
+        Rule("^(?:read|check|show)\\s+(?:me\\s+)?(?:my\\s+)?(?:new\\s+|latest\\s+|unread\\s+|recent\\s+)?(?:(?<app>$APPS)\\s+)?(?:messages?|texts?|chats?|notifications?|msgs?)(?:\\s+(?:from|by)\\s+(?<who>.+))?$|^(?:do i have|i get|any|have i got)\\s+(?:any\\s+)?(?:new\\s+)?(?:(?<app2>$APPS)\\s+)?(?:messages?|texts?|msgs?)(?:\\s+from\\s+(?<who2>.+))?$|^who (?:messaged|texted|message|don message|send) me$") { m, _ ->
+            val app = (m.g("app") ?: m.g("app2"))?.let { appDisplay(it) }
+            actions("read_messages", request(ActionId.READ_MESSAGES, Params.APP to app, Params.SENDER to (m.g("who") ?: m.g("who2"))))
+        },
+        Rule("^(?:what did|wetin)\\s+(?<who>.+?)\\s+(?:say|talk|send|write)(?: to me)?$") { m, _ ->
+            actions("read_messages", request(ActionId.READ_MESSAGES, Params.SENDER to m.g("who")))
+        },
+        Rule("^(?:reply|respond|answer)(?:\\s+(?:to\\s+)?(?<who>[^:]+?))?\\s*(?:\\s(?:saying|say|sey|with|that|and say|and tell (?:him|her|them|am))\\s+|:\\s*)(?<m>.+)$|^(?:reply|respond)(?:\\s+(?:to\\s+)?(?<who2>[^:]+?))?$") { m, _ ->
+            val who = (m.g("who") ?: m.g("who2"))?.takeIf { it.lowercase() !in setOf("him", "her", "them", "am", "it", "this", "the message", "that") }
+            val text = m.g("m")?.let { MessageRewriter.toDirectSpeech(it, thirdPerson = true) }
+            actions("reply", request(ActionId.REPLY_TO_MESSAGE, Params.SENDER to who, Params.MESSAGE to text))
+        },
+
+        // Media
+        Rule("^(?<c>pause|hold on|hold am|pause am|stop the (?:music|song|video))(?:\\s+(?:the\\s+)?(?:music|song|video|playback))?$|^(?<c2>resume|continue|unpause|play)(?:\\s+(?:the\\s+)?(?:music|song|video|playback))?$|^(?<c3>next|skip|change)(?:\\s+(?:am|this|it|the))?(?:\\s+(?:song|track|music|one))?$|^(?<c4>previous|go back to the previous|last)(?:\\s+(?:song|track))$|^(?<c5>previous)$") { m, _ ->
+            val command = when {
+                m.g("c") != null -> "pause"
+                m.g("c2") != null -> "play"
+                m.g("c3") != null -> "next"
+                else -> "previous"
+            }
+            actions("media_control", request(ActionId.MEDIA_CONTROL, Params.COMMAND to command))
+        },
+        Rule("^(?:play|put on|play me|abeg play|i wan hear|let me hear)\\s+(?<q>.+?)(?:\\s+(?:on|for|in|with|from)\\s+(?<app>spotify|youtube music|youtube|boomplay|audiomack|apple music|deezer))?$") { m, _ ->
+            val query = m.g("q")!!.removePrefix("some ").removePrefix("the song ")
+            actions("play_media", request(ActionId.PLAY_MEDIA, Params.QUERY to query, Params.APP to m.g("app")?.lowercase()))
+        },
+
+        // Directions
+        Rule("^(?:take me to|navigate to|navigate me to|directions to|get directions to|give me directions to|drive me to|show me the way to|how (?:do )?i (?:get|go) to|how i go reach|how i go get to|carry me go|i wan go|i want to go to|let's go to|lets go to|route to)\\s+(?<d>.+?)(?:\\s+(?:by|on|using)\\s+(?<mode>foot|walking|walk|car|driving|bus|transit|bike|okada|keke|motorcycle))?$") { m, _ ->
+            val mode = when (m.g("mode")?.lowercase()) {
+                null -> null
+                "foot", "walking", "walk" -> "walking"
+                "bus", "transit", "keke" -> "transit"
+                "bike", "okada", "motorcycle" -> "motorcycle"
+                else -> "driving"
+            }
+            actions("navigate", request(ActionId.NAVIGATE, Params.DESTINATION to m.g("d"), Params.MODE to mode))
+        },
+
         // Messages: WhatsApp, SMS or another named app (Telegram, Messenger, Signal...)
         Rule(
             "^(?:open (?:$APPS) and\\s+)?(?:send|text|message|whatsapp|sms)\\s+(?<r>.+?)\\s+(?:an?\\s+)?" +
                 "(?:(?:$APPS)(?: message| text| chat| dm)?|text message|message (?:on|via|through|in|by) (?:$APPS)|message|text|dm)" +
-                "(?:\\s+(?<m>(?:saying|telling|to say|to tell|that|and tell|and say|and ask|asking|which says)\\b.*))?$",
+                "(?:\\s+(?<m>(?:saying|say|sey|tell am say|tell am|telling|to say|to tell|that|and tell|and say|and ask|asking|which says)\\b.*))?$",
         ) { m, text -> message(m.g("r"), m.g("m"), text) },
         Rule(
-            "^(?:open (?:$APPS) and\\s+)?(?:send|write)\\s+(?:an?\\s+)?(?:(?:$APPS)(?: message)?|text message|message(?: (?:on|via|in|by) (?:$APPS))?|text|dm)\\s+to\\s+(?<r>.+?)" +
+            "^(?:open (?:$APPS) and\\s+)?(?:send|write)\\s+(?:an?\\s+)?(?:(?:$APPS)(?: message)?|text message|message(?: (?:on|via|in|by) (?:$APPS))?|text|msg|dm)\\s+(?:to|give|for)\\s+(?<r>.+?)" +
                 "(?:\\s+(?:on|via|through|in|by) (?:$APPS))?" +
-                "(?:\\s+(?<m>(?:saying|telling|to say|to tell|that|and tell|and say|and ask|asking|which says)\\b.*))?$",
+                "(?:\\s+(?<m>(?:saying|say|sey|tell am say|tell am|telling|to say|to tell|that|and tell|and say|and ask|asking|which says)\\b.*))?$",
         ) { m, text -> message(m.g("r"), m.g("m"), text) },
         Rule(
             "^(?:whatsapp|message|text|sms|dm)\\s+(?<r>.+?)(?:\\s+(?:on|via|through|in|by) (?:$APPS))?" +
-                "(?:\\s+(?<m>(?:saying|telling|to say|that|and tell|and say|and ask|asking)\\b.*))?$",
+                "(?:\\s+(?<m>(?:saying|say|sey|tell am say|tell am|telling|to say|that|and tell|and say|and ask|asking)\\b.*))?$",
         ) { m, text -> message(m.g("r"), m.g("m"), text) },
         Rule("^tell\\s+(?<r>.+?)\\s+(?:on|via|through|in|by) (?:$APPS)\\s+(?<m>.+)$") { m, text -> message(m.g("r"), m.g("m"), text) },
 
@@ -159,7 +230,7 @@ class LocalRuleInterpreter(
         ) { m, _ -> calendar(m.g("k")!!, m.g("c"), m.g("rest")) },
 
         // Device controls
-        Rule("^(?:turn|switch|put)\\s+(?<s>on|off)\\s+(?:the\\s+|my\\s+)?(?:flash ?light|torch)$|^(?:turn|switch)\\s+(?:the\\s+|my\\s+)?(?:flash ?light|torch)\\s+(?<s2>on|off)$|^(?:flash ?light|torch)\\s+(?<s3>on|off)$") { m, _ ->
+        Rule("^(?:(?:turn|switch|put)\\s+)?(?<s>on|off)\\s+(?:the\\s+|my\\s+)?(?:flash ?light|torch|flash|light)$|^(?:turn|switch)\\s+(?:the\\s+|my\\s+)?(?:flash ?light|torch)\\s+(?<s2>on|off)$|^(?:flash ?light|torch)\\s+(?<s3>on|off)$") { m, _ ->
             val state = m.g("s") ?: m.g("s2") ?: m.g("s3")
             actions("flashlight", request(ActionId.SET_FLASHLIGHT, Params.ENABLED to if (state == "off") "false" else "true"))
         },
@@ -176,9 +247,9 @@ class LocalRuleInterpreter(
         Rule("^(?:max(?:imum)?|full) volume$|^(?:turn|set) (?:the )?volume to (?:the )?max(?:imum)?$") { _, _ ->
             actions("volume", request(ActionId.SET_VOLUME, Params.LEVEL to "100"))
         },
-        Rule("^(?:turn|crank)\\s+(?:the\\s+)?(?:volume|music|sound|media|it)\\s+(?<d>up|down)$|^(?:turn|crank)\\s+(?<d2>up|down)\\s+(?:the\\s+)?(?:volume|music|sound|media)$|^volume (?<d3>up|down)$|^(?<i>increase|raise|decrease|lower|reduce) (?:the )?(?:media )?volume$|^(?:make it|it's too) (?<l>louder|quieter|softer|loud|quiet)$") { m, _ ->
+        Rule("^(?:turn|crank)\\s+(?:the\\s+)?(?:volume|music|sound|media|it)\\s+(?<d>up|down)$|^(?:turn|crank)\\s+(?<d2>up|down)\\s+(?:the\\s+)?(?:volume|music|sound|media)$|^volume (?<d3>up|down)$|^(?<i>increase|raise|decrease|lower|reduce|add|add to) (?:the )?(?:media )?(?:volume|sound)$|^(?:make it|it's too) (?<l>louder|quieter|softer|loud|quiet)$") { m, _ ->
             val d = m.g("d") ?: m.g("d2") ?: m.g("d3") ?: m.g("i") ?: m.g("l")
-            val dir = if (d?.lowercase() in setOf("up", "increase", "raise", "louder", "quiet")) "up" else "down"
+            val dir = if (d?.lowercase() in setOf("up", "increase", "raise", "louder", "quiet", "add", "add to")) "up" else "down"
             actions("volume", request(ActionId.SET_VOLUME, Params.DIRECTION to dir))
         },
         Rule("^(?<m>mute|unmute)(?:\\s+(?:the\\s+)?(?:volume|sound|media|music|phone))?$") { m, _ ->
@@ -262,7 +333,7 @@ class LocalRuleInterpreter(
                     )
                 }
             }
-        val body = rest.replace(Regex("^(?:to|that|about)\\s+", RegexOption.IGNORE_CASE), "")
+        val body = rest.replace(Regex("^(?:to|that|about|say|sey)\\s+(?:make\\s+i\\s+)?", RegexOption.IGNORE_CASE), "")
         val (task, whenText) = splitTrailingTime(body)
         val at = whenText?.let { time.parseDateTime(it) }
         return actions(
@@ -317,6 +388,9 @@ class LocalRuleInterpreter(
         }
     }
 
+    private fun appDisplay(name: String): String = APP_NAMES[name.lowercase()]
+        ?: when (name.lowercase()) { "whatsapp" -> "WhatsApp"; "sms" -> "Messages"; else -> name.replaceFirstChar { it.uppercaseChar() } }
+
     private fun settingsPage(spoken: String?): String? {
         val s = spoken?.lowercase()?.trim() ?: return null
         return SETTINGS_SYNONYMS.entries.firstOrNull { (k, _) -> s == k || s.contains(k) }?.value
@@ -347,10 +421,10 @@ class LocalRuleInterpreter(
         private val CONJUNCTION = Regex("\\s*,?\\s+(?:and then|then|and also|and)\\s+|\\s*,\\s+then\\s+", RegexOption.IGNORE_CASE)
         private val LEADING_FILLER = Regex(
             "^(?:hey\\s+voice\\s*pilot|ok(?:ay)?\\s+voice\\s*pilot|voice\\s*pilot|hey|ok(?:ay)?|please|kindly|abeg|" +
-                "can you|could you|would you|will you|i want you to|i'd like you to|i would like you to|help me(?: to)?)[,\\s]+",
+                "can you|could you|would you|will you|i want you to|i'd like you to|i would like you to|help me(?: to)?|biko|pls|plz|make you|you fit|una fit|abeg make you)[,\\s]+",
             RegexOption.IGNORE_CASE,
         )
-        private val TRAILING_FILLER = Regex("[,\\s]+(?:please|for me|now|right now|abeg|thanks|thank you)$", RegexOption.IGNORE_CASE)
+        private val TRAILING_FILLER = Regex("[,\\s]+(?:please|for me|now|right now|abeg|thanks|thank you|o|sharp sharp|quick quick|abeg o|biko|jare)$", RegexOption.IGNORE_CASE)
         private val TIME_START = Regex(
             "\\b(?:at|in|on|by|tomorrow|tonight|today|this|next|day after|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b",
             RegexOption.IGNORE_CASE,
@@ -379,8 +453,9 @@ class LocalRuleInterpreter(
             "general" to "general", "phone" to "general", "system" to "general",
         )
         const val HELP_TEXT =
-            "I can open apps and settings, set alarms, timers and reminders, save notes and tasks, prepare WhatsApp " +
-                "messages, open the dialer, control the flashlight, volume and Do Not Disturb, and run your routines. " +
-                "Try \"Set an alarm for 6:30\" or \"Send Samuel a WhatsApp message saying I'm on my way\"."
+            "I can open apps and settings, set alarms, timers and reminders, prepare WhatsApp, SMS and Telegram messages, " +
+                "read your new messages and reply, play music, give directions, check your airtime and data balance, " +
+                "control the flashlight, volume and Do Not Disturb, and run your routines. " +
+                "Try \"Read my WhatsApp messages\", \"Play Burna Boy on Spotify\" or \"Take me to Ikeja City Mall\"."
     }
 }

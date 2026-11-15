@@ -21,6 +21,10 @@ Latest Android test build: **[Releases › latest](https://github.com/Sammyleuma
 | Messaging | WhatsApp (Click to Chat to the resolved contact), SMS (to the resolved number), or any other named app such as Telegram, Messenger or Signal (text handed over via Android share) | You always tap **Send**; VoicePilot never claims it sent anything |
 | Planning | Multi-step requests and routines with progress, partial-failure reports | Free plan: 3 steps per request |
 | Memory | Contact nicknames (“my brother”), routines | User controlled; can be disabled and cleared |
+| Messages by voice | “Read my WhatsApp messages”, “What did Ada say?”, then “Reply saying I'm coming” | Replies always ask first; uses the notification assistant |
+| Media & maps | “Play Burna Boy on Spotify”, “Next song”, “Take me to Ikeja City Mall” | |
+| Airtime & data | “Check my airtime balance” (*310#), “Check my data” (*323#), “Buy data” (*312#) | Code goes to the dialer; you tap Call. No payments |
+| Pidgin | “Abeg send Tunde message say I dey come”, “Wake me by 6”, “Oya” | On-device |
 | Notifications | Opt-in summaries, sender announcements, replies through the app's own reply action | In memory only |
 | Activation | App, assistant overlay, Quick Settings tile, app shortcut, default-assistant role, optional hands-free “Hey VoicePilot” session | See wake-word limits in [docs/ANDROID_PERMISSIONS.md](docs/ANDROID_PERMISSIONS.md) |
 | Privacy | Local Room/DataStore, Keystore-encrypted secrets, no backups, history retention, delete-all | See [docs/SECURITY.md](docs/SECURITY.md) |

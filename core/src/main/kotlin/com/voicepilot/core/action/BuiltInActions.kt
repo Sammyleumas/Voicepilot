@@ -30,6 +30,10 @@ object Params {
     const val QUERY = "query"
     const val ALIAS = "alias"
     const val CONTACT = "contact"
+    const val SENDER = "sender"
+    const val COMMAND = "command"
+    const val DESTINATION = "destination"
+    const val CODE = "code"
 }
 
 object SettingsPages {
@@ -249,6 +253,78 @@ object BuiltInActions {
             risk = RiskLevel.LOW,
             outcome = OutcomeKind.HANDS_OFF,
             appLabel = "Browser",
+        ),
+        ActionDefinition(
+            id = ActionId.READ_MESSAGES,
+            title = "Read messages",
+            description = "Read out new messages from notifications of apps the user allowed. Optional app and sender filters.",
+            params = listOf(
+                ParamSpec(Params.APP, ParamType.Text(40), false, "App, e.g. WhatsApp"),
+                ParamSpec(Params.SENDER, ParamType.Text(80), false, "Only messages from this person"),
+            ),
+            risk = RiskLevel.LOW,
+            outcome = OutcomeKind.COMPLETES,
+            capabilities = setOf(Capability.NOTIFICATION_LISTENER),
+            appLabel = "Notifications",
+        ),
+        ActionDefinition(
+            id = ActionId.REPLY_TO_MESSAGE,
+            title = "Reply to a message",
+            description = "Reply to a received message through the notification's reply button. Without a sender, replies to the latest message.",
+            params = listOf(
+                ParamSpec(Params.MESSAGE, ParamType.Text(1000), true, "Reply text", "What should I reply?"),
+                ParamSpec(Params.SENDER, ParamType.Text(80), false, "Who to reply to"),
+                ParamSpec(Params.APP, ParamType.Text(40), false, "App the message came from"),
+            ),
+            risk = RiskLevel.HIGH,
+            outcome = OutcomeKind.COMPLETES,
+            capabilities = setOf(Capability.NOTIFICATION_LISTENER),
+            appLabel = "Notifications",
+        ),
+        ActionDefinition(
+            id = ActionId.PLAY_MEDIA,
+            title = "Play music or video",
+            description = "Search and play a song, artist, playlist or video. Apps: spotify, youtube, youtube music, boomplay, audiomack, or any player.",
+            params = listOf(
+                ParamSpec(Params.QUERY, ParamType.Text(200), true, "What to play", "What would you like to play?"),
+                ParamSpec(Params.APP, ParamType.Text(40), false, "Player app"),
+            ),
+            risk = RiskLevel.LOW,
+            outcome = OutcomeKind.HANDS_OFF,
+        ),
+        ActionDefinition(
+            id = ActionId.MEDIA_CONTROL,
+            title = "Media controls",
+            description = "Control what's playing: pause, play, next, previous.",
+            params = listOf(
+                ParamSpec(Params.COMMAND, ParamType.Choice(setOf("pause", "play", "next", "previous")), true, "Command", "Pause, play, next or previous?"),
+            ),
+            risk = RiskLevel.LOW,
+            outcome = OutcomeKind.COMPLETES,
+        ),
+        ActionDefinition(
+            id = ActionId.NAVIGATE,
+            title = "Directions",
+            description = "Start directions to a place in the maps app. Modes: driving, walking, transit, motorcycle.",
+            params = listOf(
+                ParamSpec(Params.DESTINATION, ParamType.Text(200), true, "Place or address", "Where do you want to go?"),
+                ParamSpec(Params.MODE, ParamType.Choice(setOf("driving", "walking", "transit", "motorcycle")), false, "Travel mode"),
+            ),
+            risk = RiskLevel.LOW,
+            outcome = OutcomeKind.HANDS_OFF,
+            appLabel = "Maps",
+        ),
+        ActionDefinition(
+            id = ActionId.DIAL_USSD,
+            title = "USSD code",
+            description = "Open the dialer with a USSD code such as *310# (airtime balance) or *323# (data balance). The user taps Call.",
+            params = listOf(
+                ParamSpec(Params.CODE, ParamType.Ussd, true, "USSD code like *310#", "Which code should I dial?"),
+                ParamSpec(Params.LABEL, ParamType.Text(60), false, "What the code is for"),
+            ),
+            risk = RiskLevel.MEDIUM,
+            outcome = OutcomeKind.HANDS_OFF,
+            appLabel = "Phone",
         ),
         ActionDefinition(
             id = ActionId.REMEMBER_ALIAS,

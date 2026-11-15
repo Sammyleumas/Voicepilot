@@ -21,6 +21,8 @@ sealed interface ParamType {
     data class Choice(val values: Set<String>) : ParamType
     /** International phone number, digits only, no leading plus. */
     data object Phone : ParamType
+    /** USSD code such as *310#: starts with a star or hash and ends with a hash. */
+    data object Ussd : ParamType
 }
 
 data class ParamSpec(
@@ -96,6 +98,7 @@ data class ActionDefinition(
     }
 
     companion object {
+        private val USSD = Regex("^[*#][0-9*]{1,30}#$")
         private val TRUE_WORDS = setOf("true", "on", "yes", "enable", "enabled", "1")
         private val FALSE_WORDS = setOf("false", "off", "no", "disable", "disabled", "0")
 
@@ -119,6 +122,7 @@ data class ActionDefinition(
             }
             is ParamType.Choice -> raw.lowercase().takeIf { it in type.values }
             ParamType.Phone -> raw.filter { it.isDigit() }.takeIf { it.length in 7..15 }
+            ParamType.Ussd -> raw.replace(" ", "").takeIf { USSD.matches(it) }
         }
     }
 }

@@ -17,6 +17,12 @@ All actions are defined in `core/.../action/BuiltInActions.kt` and implemented i
 | `prepare_whatsapp_message` | Medium | Hand-off | `https://wa.me/<number>?text=…` with `setPackage(com.whatsapp / w4b)` | **User taps Send.** No reading of chats. |
 | `prepare_sms` | Medium | Hand-off | `ACTION_SENDTO smsto:` with `sms_body` | User taps Send in their SMS app |
 | `share_message_to_app` | Medium | Hand-off | `ACTION_SEND text/plain` to the named app (Telegram, Messenger, Signal, Instagram, Gmail, Slack, Teams, imo…) | These apps don't let other apps choose the chat: the user picks it and taps Send |
+| `read_messages` | Low | Completes | Notification assistant (in-memory) | Only apps you allowed; reads content only when you ask |
+| `reply_to_message` | **High** | Completes | The notification's own reply button (`RemoteInput`) | Always asks first and names the person; only works while the notification is still showing |
+| `play_media` | Low | Hand-off | `MEDIA_PLAY_FROM_SEARCH` (Spotify, YouTube Music…), `spotify:search:`, YouTube search | Apps without play-from-search just open |
+| `media_control` | Low | Completes | `AudioManager.dispatchMediaKeyEvent` | Controls whatever app is playing |
+| `navigate` | Low | Hand-off | `google.navigation:` (Google Maps), `geo:` fallback, web directions | Modes: driving, walking, transit, motorcycle (okada) |
+| `dial_ussd` | Medium | Hand-off | `ACTION_DIAL` with the code | **User taps Call.** *310# airtime, *323# data balance, *312# data plans (NCC harmonised codes). Buying airtime is refused: it's a payment |
 | `dial_contact` | Medium | Hand-off | `ACTION_DIAL` | User taps Call |
 | `set_do_not_disturb` | Medium | Completes | `NotificationManager.setInterruptionFilter` | Needs DND access |
 | `web_search` | Low | Hand-off | `ACTION_WEB_SEARCH`, browser fallback | — |
@@ -25,6 +31,10 @@ All actions are defined in `core/.../action/BuiltInActions.kt` and implemented i
 ## Choosing the messaging app
 
 “Message Ada saying …” uses the default messaging app (Settings › Automation, WhatsApp or SMS). Naming an app picks it for that request: “… on Telegram”, “by SMS”, “send Ada a Messenger message …”. SMS and WhatsApp resolve the contact's number on-device; other apps receive only the text.
+
+## Nigerian Pidgin and natural phrasing
+
+On-device rules understand common Pidgin: “Abeg send Tunde message say I dey come”, “send message give Ada say…”, “tell am say…”, “wake me by 6”, “on the torch”, “add the sound”, “I wan sleep”, “wetin be the time”, “how I go reach Lekki”, “carry me go Yaba by okada”, “check my airtime”, and answers like “oya”, “ehen”, “na so”, “leave am”. “am” in a message becomes “you”, except in English (“I am outside” is kept).
 
 ## WhatsApp
 

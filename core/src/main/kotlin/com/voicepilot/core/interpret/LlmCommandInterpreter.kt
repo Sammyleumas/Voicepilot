@@ -143,6 +143,7 @@ class LlmCommandInterpreter(
         ParamType.DateTime -> "yyyy-MM-ddTHH:mm"
         is ParamType.Choice -> type.values.joinToString("|")
         ParamType.Phone -> "digits"
+        ParamType.Ussd -> "USSD code like *310#"
     }
 
     companion object {

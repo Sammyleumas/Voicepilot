@@ -92,6 +92,9 @@ class TestEnv(
     plan: Plan = Plan.FREE,
     routines: List<Routine> = emptyList(),
     interpreter: CommandInterpreter = LocalRuleInterpreter(testClock),
+    inbox: com.voicepilot.core.messaging.MessageInbox? = com.voicepilot.core.messaging.MessageInbox { sender, _ ->
+        com.voicepilot.core.messaging.ReplyTarget(sender ?: "Samuel Okafor", "WhatsApp")
+    },
 ) {
     val handlers = RecordingHandlers()
     val history = FakeHistory()
@@ -107,5 +110,6 @@ class TestEnv(
         settings = { settings },
         entitlements = { Entitlements.forPlan(plan) },
         clock = testClock,
+        inbox = inbox,
     )
 }

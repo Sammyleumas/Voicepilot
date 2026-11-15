@@ -94,6 +94,8 @@ class AssistantSession(
     private val settings: () -> AssistantSettings,
     private val entitlements: () -> Entitlements,
     private val clock: Clock,
+    /** Received messages for replies; null when the notification assistant isn't available. */
+    private val inbox: com.voicepilot.core.messaging.MessageInbox? = null,
 ) {
     private val _status = MutableStateFlow<AssistantStatus>(AssistantStatus.Idle)
     val status: StateFlow<AssistantStatus> = _status.asStateFlow()
@@ -236,6 +238,14 @@ class AssistantSession(
                     is RecipientOutcome.Updated -> { request = outcome.request; draft.requests[i] = request }
                     is RecipientOutcome.Stop -> return outcome.reply
                 }
+            }
+
+            // Pin a reply to one concrete conversation so the confirmation names the person.
+            if (request.action == com.voicepilot.core.model.ActionId.REPLY_TO_MESSAGE && executor.preflight(request) !is Preflight.NeedsCapabilities) {
+                val target = inbox?.replyTarget(request.param(Params.SENDER), request.param(Params.APP))
+                    ?: return fail(draft, "I can't find a message to reply to. Turn on the notification assistant and allow the app, then try again.", FailureReason.NOT_FOUND, recoverable = true)
+                request = request.with(Params.SENDER, target.sender).with(Params.APP, target.appLabel)
+                draft.requests[i] = request
             }
 
             when (val p = executor.preflight(request)) {
@@ -425,6 +435,7 @@ class AssistantSession(
             }
             is ParamType.Choice -> TextNormalizer.normalize(text).let { n -> type.values.firstOrNull { n == it || n.contains(it) } }
             ParamType.Phone -> PhoneNumberNormalizer.toInternationalDigits(text, settings().defaultCountryCode)
+            ParamType.Ussd -> com.voicepilot.core.messaging.UssdCodes.fromSpeech(text)
             is ParamType.Text -> when (spec.name) {
                 Params.MESSAGE -> MessageRewriter.toDirectSpeech(text, thirdPerson = true)
                 Params.RECIPIENT -> text.removePrefix("to ").removePrefix("To ")
@@ -468,6 +479,8 @@ class AssistantSession(
         val note = when {
             plan.steps.any { it.request.action == com.voicepilot.core.model.ActionId.PREPARE_WHATSAPP_MESSAGE } ->
                 " You'll tap Send in WhatsApp to deliver it."
+            plan.steps.any { it.request.action == com.voicepilot.core.model.ActionId.REPLY_TO_MESSAGE } ->
+                " This sends right away through the app's reply button."
             plan.steps.any { it.request.action == com.voicepilot.core.model.ActionId.PREPARE_SMS } ->
                 " You'll tap Send in your messaging app to deliver it."
             plan.steps.any { it.request.action == com.voicepilot.core.model.ActionId.SHARE_MESSAGE_TO_APP } ->
@@ -502,7 +515,7 @@ class AssistantSession(
     }
 
     private fun isCancelWord(input: String): Boolean =
-        TextNormalizer.normalize(input) in setOf("cancel", "stop", "never mind", "nevermind", "forget it", "cancel that", "abort")
+        TextNormalizer.normalize(input) in setOf("cancel", "stop", "never mind", "nevermind", "forget it", "cancel that", "abort", "leave am", "forget am", "cancel am")
 
     private fun context(): ConversationContext {
         val s = settings()

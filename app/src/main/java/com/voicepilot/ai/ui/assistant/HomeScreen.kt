@@ -49,10 +49,10 @@ import com.voicepilot.core.history.HistoryStatus
 import com.voicepilot.core.model.Capability
 
 private val QUICK_ACTIONS = listOf(
-    "Open WhatsApp",
+    "Read my messages",
+    "Check my airtime balance",
     "Set an alarm for 6:30 am",
-    "Start a 10 minute timer",
-    "Take a note",
+    "Play some Afrobeats",
     "Turn on the flashlight",
     "What can you do?",
 )

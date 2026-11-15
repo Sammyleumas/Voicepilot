@@ -17,7 +17,14 @@ import com.voicepilot.ai.automation.TaskHandler
 import com.voicepilot.ai.automation.TimerHandler
 import com.voicepilot.ai.automation.VolumeHandler
 import com.voicepilot.ai.automation.WebSearchHandler
+import com.voicepilot.ai.automation.MediaControlHandler
+import com.voicepilot.ai.automation.NavigateHandler
+import com.voicepilot.ai.automation.PlayMediaHandler
+import com.voicepilot.ai.automation.ReadMessagesHandler
+import com.voicepilot.ai.automation.ReplyHandler
 import com.voicepilot.ai.automation.ShareToAppHandler
+import com.voicepilot.ai.automation.UssdHandler
+import com.voicepilot.ai.notifications.NotificationHub
 import com.voicepilot.ai.automation.SmsHandler
 import com.voicepilot.ai.automation.WhatsAppHandler
 import com.voicepilot.ai.billing.SubscriptionRepository
@@ -118,6 +125,12 @@ object AppModule {
         whatsApp: WhatsAppHandler,
         sms: SmsHandler,
         share: ShareToAppHandler,
+        readMessages: ReadMessagesHandler,
+        reply: ReplyHandler,
+        playMedia: PlayMediaHandler,
+        mediaControl: MediaControlHandler,
+        navigate: NavigateHandler,
+        ussd: UssdHandler,
         dial: DialHandler,
         dnd: DoNotDisturbHandler,
         webSearch: WebSearchHandler,
@@ -140,6 +153,12 @@ object AppModule {
         ActionId.PREPARE_WHATSAPP_MESSAGE to whatsApp,
         ActionId.PREPARE_SMS to sms,
         ActionId.SHARE_MESSAGE_TO_APP to share,
+        ActionId.READ_MESSAGES to readMessages,
+        ActionId.REPLY_TO_MESSAGE to reply,
+        ActionId.PLAY_MEDIA to playMedia,
+        ActionId.MEDIA_CONTROL to mediaControl,
+        ActionId.NAVIGATE to navigate,
+        ActionId.DIAL_USSD to ussd,
         ActionId.DIAL_CONTACT to dial,
         ActionId.SET_DO_NOT_DISTURB to dnd,
         ActionId.WEB_SEARCH to webSearch,
@@ -178,6 +197,7 @@ object AppModule {
         settings: SettingsRepository,
         subscription: SubscriptionRepository,
         clock: Clock,
+        inbox: NotificationHub,
     ): AssistantSession = AssistantSession(
         interpreter = interpreter,
         executor = executor,
@@ -188,6 +208,7 @@ object AppModule {
         settings = { settings.current },
         entitlements = { subscription.entitlements.value },
         clock = clock,
+        inbox = inbox,
     )
 }
 

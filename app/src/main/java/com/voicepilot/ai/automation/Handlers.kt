@@ -14,6 +14,10 @@ import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.provider.Settings
 import com.voicepilot.ai.data.NotesRepository
+import com.voicepilot.ai.data.SettingsRepository
+import com.voicepilot.ai.notifications.NotificationHub
+import com.voicepilot.core.messaging.UssdCodes
+import android.view.KeyEvent
 import com.voicepilot.ai.platform.AndroidAppCatalog
 import com.voicepilot.core.action.ActionHandler
 import com.voicepilot.core.action.Params
@@ -328,5 +332,150 @@ class DialHandler @Inject constructor(private val launcher: ActivityLauncher) : 
             return failed("This device can't make phone calls.", FailureReason.UNSUPPORTED_ON_DEVICE)
         }
         return ActionResult.Prepared("I've opened the dialer with $name's number. Tap Call to start the call.")
+    }
+}
+
+
+// ------------------------------------------------------------------ received messages
+
+/** Reads matching messages aloud. Content is read only because the user asked for it. */
+class ReadMessagesHandler @Inject constructor(
+    private val hub: NotificationHub,
+    private val settings: SettingsRepository,
+) : ActionHandler {
+    override suspend fun execute(request: ActionRequest): ActionResult {
+        val s = settings.current
+        if (!s.notificationAssistantEnabled || s.notificationAllowedPackages.isEmpty()) {
+            return failed(
+                "The notification assistant is off. Turn it on and choose apps such as WhatsApp in Settings › Automation › Notification assistant.",
+                FailureReason.BLOCKED_BY_POLICY,
+                true,
+            )
+        }
+        val sender = request.param(Params.SENDER)
+        val app = request.param(Params.APP)
+        val found = hub.read(app, sender)
+        if (found.isEmpty()) {
+            val scope = listOfNotNull(app, sender?.let { "from $it" }).joinToString(" ")
+            return ActionResult.Completed(if (scope.isEmpty()) "You have no new messages." else "No new $scope messages.".replace("  ", " "))
+        }
+        val shown = found.takeLast(MAX_READ)
+        val intro = "You have ${found.size} new message${if (found.size == 1) "" else "s"}."
+        val body = shown.joinToString(" ") { "From ${it.conversationTitle ?: it.title} on ${it.appLabel}: ${it.text.take(240)}." }
+        val more = if (found.size > MAX_READ) " There are ${found.size - MAX_READ} older ones too." else ""
+        val replyHint = if (shown.last().canReply) " Say “reply” and your message to answer ${shown.last().conversationTitle ?: shown.last().title}." else ""
+        return ActionResult.Completed("$intro $body$more$replyHint")
+    }
+
+    private companion object {
+        const val MAX_READ = 5
+    }
+}
+
+/** Sends a reply through the notification's own reply button, after the user confirmed it. */
+class ReplyHandler @Inject constructor(private val hub: NotificationHub) : ActionHandler {
+    override suspend fun execute(request: ActionRequest): ActionResult {
+        val text = request.param(Params.MESSAGE)!!
+        val sender = request.param(Params.SENDER)
+        val target = hub.replyTarget(sender, request.param(Params.APP))
+            ?: return failed("That message is no longer available to reply to. Open the app to answer.", FailureReason.NOT_FOUND, true)
+        if (!hub.replyTo(sender, request.param(Params.APP), text)) {
+            return failed("${target.appLabel} didn't accept the reply. Open the chat to answer.", FailureReason.UNSUPPORTED_ON_DEVICE, true)
+        }
+        return ActionResult.Completed("Sent your reply to ${target.sender} through ${target.appLabel}.")
+    }
+}
+
+// ------------------------------------------------------------------ media and maps
+
+class PlayMediaHandler @Inject constructor(
+    private val catalog: AndroidAppCatalog,
+    private val launcher: ActivityLauncher,
+) : ActionHandler {
+    override suspend fun execute(request: ActionRequest): ActionResult {
+        val query = request.param(Params.QUERY)!!
+        val appName = request.param(Params.APP)
+        val pkg = appName?.let { AppResolver(catalog).resolve(it) }
+        if (appName != null && pkg == null) {
+            return failed("I couldn't find ${ActionDescriber.appTitle(appName)} on this phone.", FailureReason.APP_NOT_INSTALLED, true)
+        }
+        val playFromSearch = Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH)
+            .putExtra(SearchManager.QUERY, query)
+            .apply { pkg?.let { setPackage(it.packageName) } }
+        val youtubeSearch = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=" + Uri.encode(query)))
+            .apply { if (pkg?.packageName == YOUTUBE) setPackage(YOUTUBE) }
+        val spotifySearch = Intent(Intent.ACTION_VIEW, Uri.parse("spotify:search:" + Uri.encode(query))).setPackage("com.spotify.music")
+        val candidates = when (pkg?.packageName) {
+            YOUTUBE -> listOf(youtubeSearch)
+            "com.spotify.music" -> listOf(playFromSearch, spotifySearch)
+            null -> listOf(playFromSearch, youtubeSearch)
+            else -> listOf(playFromSearch, launcher.launchIntentFor(pkg!!.packageName))
+        }.filterNotNull()
+        val intent = candidates.firstOrNull(launcher::canResolve)
+            ?: return failed("I couldn't find a music or video app to play that.", FailureReason.APP_NOT_INSTALLED, true)
+        if (!launcher.start(intent)) return failed("I couldn't open the player.", FailureReason.UNKNOWN, true)
+        val where = pkg?.label ?: if (intent === youtubeSearch) "YouTube" else "your music app"
+        return ActionResult.Prepared(
+            if (intent.action == Intent.ACTION_MAIN) "I've opened ${pkg?.label}. It doesn't accept search from other apps, so search for “$query” there."
+            else "I've asked $where to play “$query”.",
+        )
+    }
+
+    private companion object {
+        const val YOUTUBE = "com.google.android.youtube"
+    }
+}
+
+class MediaControlHandler @Inject constructor(@ApplicationContext private val context: Context) : ActionHandler {
+    override suspend fun execute(request: ActionRequest): ActionResult {
+        val audio = context.getSystemService(AudioManager::class.java)
+        val (key, message) = when (request.param(Params.COMMAND)) {
+            "pause" -> KeyEvent.KEYCODE_MEDIA_PAUSE to "Paused."
+            "next" -> KeyEvent.KEYCODE_MEDIA_NEXT to "Skipped to the next track."
+            "previous" -> KeyEvent.KEYCODE_MEDIA_PREVIOUS to "Went back a track."
+            else -> KeyEvent.KEYCODE_MEDIA_PLAY to "Playing."
+        }
+        if (key == KeyEvent.KEYCODE_MEDIA_PAUSE && !audio.isMusicActive) {
+            return ActionResult.Completed("Nothing is playing right now.")
+        }
+        audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, key))
+        audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, key))
+        return ActionResult.Completed(message)
+    }
+}
+
+class NavigateHandler @Inject constructor(private val launcher: ActivityLauncher) : ActionHandler {
+    override suspend fun execute(request: ActionRequest): ActionResult {
+        val destination = request.param(Params.DESTINATION)!!
+        val modeLetter = when (request.param(Params.MODE)) {
+            "walking" -> "w"
+            "transit" -> "r"
+            "motorcycle" -> "l"
+            else -> "d"
+        }
+        val googleNav = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=${Uri.encode(destination)}&mode=$modeLetter"))
+            .setPackage("com.google.android.apps.maps")
+        val anyMap = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=" + Uri.encode(destination)))
+        val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/dir/?api=1&destination=" + Uri.encode(destination)))
+        val intent = listOf(googleNav, anyMap, web).firstOrNull(launcher::canResolve)
+            ?: return failed("I couldn't find a maps app.", FailureReason.APP_NOT_INSTALLED)
+        if (!launcher.start(intent)) return failed("I couldn't open maps.", FailureReason.UNKNOWN, true)
+        return ActionResult.Prepared(
+            if (intent === googleNav) "Starting directions to $destination in Google Maps."
+            else "I've opened maps with $destination. Tap Directions to start.",
+        )
+    }
+}
+
+/** Puts a USSD code in the dialer. VoicePilot never places the call itself. */
+class UssdHandler @Inject constructor(private val launcher: ActivityLauncher) : ActionHandler {
+    override suspend fun execute(request: ActionRequest): ActionResult {
+        val code = request.param(Params.CODE)!!
+        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode(code)))
+        if (!launcher.canResolve(intent) || !launcher.start(intent)) {
+            return failed("This device can't dial codes.", FailureReason.UNSUPPORTED_ON_DEVICE)
+        }
+        val label = request.param(Params.LABEL) ?: UssdCodes.KNOWN[code]
+        return ActionResult.Prepared("I've put $code in the dialer${label?.let { " for your $it" } ?: ""}. Tap Call to run it.")
     }
 }
