@@ -137,7 +137,7 @@ class LocalRuleInterpreter(
                 InterpretationSource.LOCAL_RULES,
             )
         },
-        Rule("^(?:dial|run|call|enter)\\s+(?<c>(?:star|\\*|hash|#|asterisk)\\b?.*)$") { m, _ ->
+        Rule("^(?:dial|run|call|enter)\\s+(?<c>(?:star|\\*|hash|#|asterisk).*)$") { m, _ ->
             val code = UssdCodes.fromSpeech(m.g("c")!!) ?: return@Rule null
             actions("dial_ussd", request(ActionId.DIAL_USSD, Params.CODE to code))
         },

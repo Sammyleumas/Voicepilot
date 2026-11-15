@@ -22,6 +22,7 @@ CI (`.github/workflows/android.yml`) runs all of the above on every push to `mai
 | `AiTest` (10) | core | LLM JSON parsing and sanitising (drops unknown actions, model-supplied phone numbers), prompt contents, hybrid fallback, offline degradation, quota, rate limiter, Gemini request/response/error mapping, cloud proxy |
 | `UtilitiesTest` (16) | core | Time and duration parsing, number words, name matching, contact resolution (ambiguous, weak, multiple numbers), phone normalisation, Click to Chat links, yes/no, wake phrase, routines, notification summaries, app resolution, memory handler |
 | `DatabaseTest` (3) | app/androidTest | History round trip with retry request, alias normalisation/replace, routine JSON |
+| `OnDeviceSmokeTest` (2) | app/androidTest | Launches the app end to end and runs every command rule on Android's ICU regex engine (stricter than the JVM's; a JVM-only check missed a pattern that crashed build 6 on launch) |
 | `AssistantTurnTest` (2) | app/androidTest | Confirmation card preview + button, contact choice touch alternative |
 | `app.test.js` (5) | backend | Proxy happy path (no key leak, no prompt logging), auth failures, validation, quotas, Firebase JWT verification incl. tampering |
 
